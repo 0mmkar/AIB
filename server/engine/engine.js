@@ -41,19 +41,24 @@ export function evaluate(extracts, { schedule = loadSchedule(), mappingRows = lo
 
   const items = [];
   const outOfScope = {};
+  let unmapped23B = [];
   for (const rule of RULES) {
     const res = rule(ctx);
     items.push(...res.items);
     const slaIds = [...new Set(res.items.map((i) => i.sla))];
     if (res.outOfScope) outOfScope[slaIds.join('+') || rule.name] = res.outOfScope;
+    if (res.unmapped) unmapped23B = res.unmapped;
   }
 
   return {
     asOf: asOfDay,
     asOfSource: asOf ? 'Set explicitly' : derived?.source,
     schedule,
+    mappingRows,
+    workflows,
     items,
     outOfScope,
+    unmapped23B,
     monthly: rollUp(items, schedule),
     totals: rollUpTotals(items, schedule),
   };

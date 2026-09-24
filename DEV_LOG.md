@@ -173,15 +173,15 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
 - [x] A9 `scripts/verify-real.js` + `npm run verify:real`: **0 diffs** against every SLA tab and the Monthly summary, for both the csv and xlsx sets.
 - [x] A10 `server/engine/calendar.test.js` + `npm test`: 8 boundary tests.
 
-### Phase B — Backend swap (Iteration 2)
-- [ ] B1 Store layout:
+### Phase B — Backend swap (Iteration 2) — done
+- [x] B1 Store layout:
   - `data/extracts/`: the current extract set, with an index
   - `data/analyses/<month>.json`: one pack per month
   - `data/snapshot.json`: as-of date, sources and totals
-- [ ] B2 Pipeline:
+- [x] B2 Pipeline:
   - `importExtracts(files)`: read, identify and store the files (a same-kind file replaces the old one, except workflow, which allows open + closed)
   - `rebuild()`: evaluate and write every month's pack
-- [ ] B3 Data-quality findings, derived only from the data:
+- [x] B3 Data-quality findings, derived only from the data:
   - open items past deadline (backlog)
   - withdrawals with no approval workflow, and approval workflows with no withdrawal
   - REJECTED EBQ exclusions
@@ -191,15 +191,15 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
   - partial final month
   - Request-ID precision loss
   - `nan` literals
-- [ ] B4 API:
+- [x] B4 API:
   - `bootstrap`
   - `extracts` (list / upload / delete / rebuild)
   - `analysis/:month`
   - `items/:month` (filterable)
   - `intelligence`
   - `ask`
-- [ ] B5 Cold start: when no packs exist, import `Claude_Data/` automatically. `SKIP_BOOTSTRAP_DATA=1` disables this.
-- [ ] B6 Delete the demo code:
+- [x] B5 Cold start: when no packs exist, import `Claude_Data/` automatically. `SKIP_BOOTSTRAP_DATA=1` disables this.
+- [x] B6 Delete the demo code:
   - `server/adapters/`, `classify.js`, `parse.js`, `slaEngine.js`, `dataQuality.js`, `prepareDemo.js`
   - `config/sla-metrics.json`, `config/source-templates.json`
   - `scripts/seed.js`, `scenario.js`, `generators/`, `lib/`, `prepare-demo.js`
@@ -207,6 +207,7 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
   - the matching npm scripts
 
 ### Phase C — UI on the real data (Iteration 3), keeping the visual design
+- [ ] C0 Remove the old per-month ingest flow (confirm/correct classification, samples, held-back file) from the UI
 - [ ] C1 Routing:
   - a global **Extracts** screen, reached from the dashboard hero and the rail
   - per-month views: SLA position, Exceptions, Governance pack
@@ -236,14 +237,14 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
   - data quality
   - evidence (extract files)
 
-### Phase D — Intelligence on the real data (Iteration 4)
-- [ ] D1 `server/intelligence.js` rewritten, with no forecasts:
+### Phase D — Intelligence on the real data (D1–D2 done in Iteration 2; D3 UI in Iteration 3)
+- [x] D1 `server/intelligence.js` rewritten, with no forecasts:
   - per-SLA monthly trend (both rates vs target)
   - months passed and failed
   - latest full month vs partial month
   - where misses concentrate (assignee, product, workflow / transaction type)
   - backlog by SLA
-- [ ] D2 Narrative and Q&A rewritten to phrase only those figures. Keep the Bedrock client, the disk cache, the rules fallback and the fabrication guard.
+- [x] D2 Narrative and Q&A rewritten to phrase only those figures. Keep the Bedrock client, the disk cache, the rules fallback and the fabrication guard.
 - [ ] D3 Panel UI: trend chart (target line, fail region), SLA record, drivers, backlog, narrative and ask box.
 
 ### Phase E — Finish (Iteration 5)
@@ -339,3 +340,66 @@ The plan was rewritten (§3) and §2.5 marked superseded, because the demo pipel
 - The derived as-of date is 2026-09-24. All 231 open workflows agree on it.
 
 **Next:** Iteration 2 (Phase B): swap the backend to the new engine, add the data-quality findings and API, auto-load on cold start, and delete the demo code.
+
+### Iteration 2 — 2026-09-24 · Backend rebuilt on the extract set; demo code removed
+
+**Goal:** Phase B. Serve everything from the new engine, derive data-quality findings from the data, rewrite intelligence / narrative / Q&A to use only computed figures, auto-load `Claude_Data/`, and delete the demo.
+
+**Plan change:** Phase D's backend (D1–D2) moved into this iteration, because the old intelligence modules depended on the deleted demo engine. D3 (panel UI) joins the UI work in Iteration 3. Added C0 (strip the old per-month ingest UI).
+
+**Changes**
+- Engine:
+  - `rules.js`: 23B returns the unmapped EBQ pairs. Step 2 and 23C record `candidateWorkflows`.
+  - `engine.js`: returns `workflows`, `mappingRows` and `unmapped23B` for the findings.
+  - The verify harness still reports 0 diffs.
+- New:
+  - `server/slots.js`: the 5 slots of an extract set. The workflow slot is open or closed, decided from the rows' Close Date.
+  - `server/quality.js`: findings for the whole set and for each month.
+  - `server/insights.js`: failure concentration.
+  - `scripts/load-data.js` (`npm run data:load`).
+  - `server/narrative.test.js`.
+- Rewritten:
+  - `server/store.js`: `data/extracts`, `data/analyses/<month>.json`, `data/snapshot.json`.
+  - `server/pipeline.js`: `importExtracts`, where a newer file for the same slot supersedes the old one, so csv + xlsx of one extract cannot double-count. Also `rebuild` (one pack per month) and `loadBundled`.
+  - `server/index.js`: the new API, with serialised writes and a cold-start auto-load.
+  - `server/intelligence.js`: trends, pass/fail record, drivers, backlog. **No forecasts.**
+  - `server/narrative.js`: new brief, rules text and prompt. It keeps the Bedrock client, cache and figure guard, and adds a **claims guard**.
+  - `server/assistant.js`: resolves the 8 SLA lines.
+  - `scripts/reset.js`.
+- **Deleted** (demo):
+  - `server/adapters/`, `classify.js`, `parse.js`, `slaEngine.js`, `dataQuality.js`, `prepareDemo.js`
+  - `config/sla-metrics.json`, `config/source-templates.json`
+  - `scripts/seed.js`, `scenario.js`, `generators/`, `lib/`, `prepare-demo.js`
+  - `data/seed/`, `data/holdback/`
+  - the npm scripts `seed` and `demo`
+  - the dependencies `pdf-parse` and `pdfkit` (the data has no PDFs)
+- Housekeeping:
+  - `.gitignore`: all of `data/` is runtime state.
+  - `.gitattributes`: dropped the seed rules.
+  - `.env.example`: `SKIP_BOOTSTRAP_DEMO` → `SKIP_BOOTSTRAP_DATA`.
+  - `render.yaml` comment updated.
+
+**Errors faced**
+
+| # | Symptom | Root cause | Fix |
+|---|---|---|---|
+| E2.1 | Node regex edits to `.gitignore` / `.gitattributes` / `.env.example` silently changed nothing | The working copies have **CRLF** line endings (git autocrlf), so `\n`-anchored patterns never matched | Edited with the Edit/Write tools. The same trap applies to any `\n` regex on tracked files. |
+| E2.2 | The Bedrock (Nova Pro) narrative said **23C failed** in Aug 2026 (it passed, 96.97% vs 96%) and that **23B NUL fails most often** (23C does, 12 vs 11 months) | The figure guard only checks that numbers exist in the input. A real figure attached to the wrong claim passes it. The per-SLA `status` fields were easy to misread. | The brief now spells out `metTarget` / `missedTarget` lists and `missedTargetInMostCompleteMonths`. New `contradictedClaims()` guard rejects text that inverts a pass/fail or names the wrong "most often" SLA, and falls back to the rules text. Regression test uses the verbatim bad output. |
+| E2.3 | Drivers listed groups at 1.01× the SLA's failure rate as "concentrations" | Ranking by failures × lift rewarded big groups at average rates | Require at least 1.25× the SLA rate. Rank by excess failures over the SLA rate. |
+| E2.4 | Month findings listed "open past deadline" for 23B UL **and** its steps (double count) | The filter tested `x.parts` on result rows, which do not carry `parts` | Look up the roll-up ids in the schedule |
+| E2.5 | A new narrative test failed | The test was wrong: "23B UL passed step 1 but failed overall" splits into a genuine pass claim, and rejecting it is the conservative behaviour | Rewrote the case to test real ambiguity |
+
+**Verification**
+- `npm run verify:real` → 0 diffs (csv + xlsx).
+- `npm test` → 12/12.
+- `npm run data:load` → 22 packs (2024-12 → 2026-09) in about 0.7 s. The totals equal the workbook's Total row for all 8 lines.
+- API checks against the live server:
+  - `bootstrap`: 22 months, 5 slots, 8 SLAs
+  - `analysis/2026-08`: all 8 lines equal the workbook's Aug-2026 row
+  - `items`: filters by SLA and outcome
+  - `extracts`: 5/5 slots present
+  - `intelligence`: backlog 1,399, which equals the sum of the workbook's overdue totals
+  - `ask`: SLA resolution works, and off-topic questions are refused
+- The Bedrock narrative after the fixes states every pass/fail correctly (checked by hand against the packs).
+
+**Next:** Iteration 3 (Phase C + D3): move the UI onto the new API while keeping the visual design.

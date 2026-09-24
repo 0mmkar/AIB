@@ -13,6 +13,9 @@ import { OUTCOME, judge, norm } from './outcome.js';
  * SLA_Expected_Results.xlsx, including its stated defaults where the contract is silent.
  */
 
+/** How many of a policy's workflows predate the event — more than one means an earlier one was superseded. */
+const candidatesBefore = (list, when) => (list ?? []).filter((w) => w.created <= when).length;
+
 const wfDetail = (w) => ({
   workflowNumber: w.number,
   workflowType: w.type,
@@ -80,14 +83,14 @@ export function rule23B_EBQ(ctx) {
   const ulCode = ctx.def('23B_UL_S1').params.mappingCode;
 
   const items = [];
-  let outOfScope = 0;
+  const unmapped = [];
   for (const r of ebq) {
     const product = text(r, 'product');
     const transactionType = text(r, 'transaction type');
     const mapped = ctx.mapping.get(`${norm(product)}|${norm(transactionType)}`);
     const sla = mapped?.code === nulCode ? '23B_NUL' : mapped?.code === ulCode ? '23B_UL_S1' : null;
     if (!sla) {
-      outOfScope++;
+      unmapped.push({ product, transactionType, month: monthOf(parseStamp(r['transaction start date'])) });
       continue;
     }
 
@@ -119,7 +122,7 @@ export function rule23B_EBQ(ctx) {
       userId: text(r, 'user id'),
     });
   }
-  return { items, outOfScope };
+  return { items, outOfScope: unmapped.length, unmapped };
 }
 
 // ---------------------------------------------------------------- 23B UL Step 2
@@ -156,6 +159,7 @@ export function rule23B_Step2(ctx) {
     if (!wf) return { ...base, month: monthOf(last), outcome: OUTCOME.NO_MATCH };
 
     const clock = ctx.cal.clockStart(wf.created);
+    base.candidateWorkflows = candidatesBefore(approvals.get(policy), last);
     const deadline = ctx.cal.cutoffRule(wf.created);
     const completedAt = norm(status) === complete ? dayOf(last) : null;
     return {
@@ -229,6 +233,7 @@ export function rule23C(ctx) {
       ...base,
       ...wfDetail(wf),
       product,
+      candidateWorkflows: candidatesBefore(approvals.get(policy), last),
       month: monthOf(wf.created),
       outcome: elapsedHours < maxHours ? OUTCOME.MET : OUTCOME.MISSED,
       startedAt: isoOf(wf.created),

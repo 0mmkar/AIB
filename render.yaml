@@ -11,7 +11,7 @@ services:
       - key: NODE_VERSION
         value: "22"
       # Point writable state at a mounted disk. On the free plan there is no disk, so this
-      # resolves to the ephemeral filesystem and the server rebuilds the demo history on
+      # resolves to the ephemeral filesystem and the server loads the delivered extracts from Claude_Data/ on
       # each cold start. Add a disk (paid plan) and uploads survive restarts.
       - key: DATA_DIR
         value: /var/data

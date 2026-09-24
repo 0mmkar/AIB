@@ -6,11 +6,6 @@
 *.xlsx binary
 *.xls binary
 
-# Synthetic source files are fixtures — they must survive a clone byte-for-byte, including
-# the CRLF line endings that make the AWS Connect export look like the real thing.
-data/seed/** -text
-data/holdback/** -text
-
 # The BaNCS extracts and the expected-results workbook are source evidence — kept exactly
 # as delivered.
 Claude_Data/** -text

@@ -42,65 +42,72 @@ add a correction in the new entry.
 
 ## Current status
 
-_Last updated: 2026-09-24 · Iteration 1_
+_Last updated: 2026-09-24 · Iteration 2_
 
-- **Direction:** all demo logic is being discarded. Everything follows `Claude_Data/` only.
-  The UI keeps its visual design. Decisions D1–D7 are in DEV_LOG.md §3.
+- **Direction:** all demo logic is discarded. Everything follows `Claude_Data/` only. The UI
+  keeps its visual design. Decisions D1–D7 are in DEV_LOG.md §3.
 - **Branch:** work happens on `feature/real-bancs-data`. **Never commit to `main`.**
   `Claude_Data/` is committed on this branch (the user's decision).
-- **Done:** the new SLA engine in `server/engine/` reproduces `SLA_Expected_Results.xlsx`
-  exactly (`npm run verify:real` gives 0 diffs, csv and xlsx). `npm test` passes 8/8.
-- **Not yet wired:** the API and UI still run the old demo pipeline. Iteration 2 swaps the
-  backend and deletes the demo code. Iteration 3 moves the UI onto the new data, and
-  Iteration 4 does the same for Intelligence.
+- **Done:**
+  - The engine reproduces `SLA_Expected_Results.xlsx` exactly (`npm run verify:real`
+    gives 0 diffs).
+  - The backend serves the real data: 22 monthly packs, findings, drivers, and a
+    data-only intelligence layer with a guarded Bedrock narrative and Q&A.
+  - The demo code, the seed data and the PDF dependencies are deleted.
+  - `npm test` passes 12/12.
+- **Not yet wired:** the React UI still calls the old API shape. Iteration 3 moves every
+  view (and the Intelligence panel) onto the new API while keeping the design.
 
 ---
 
 ## Commands
 
 ```bash
-npm install          # first — node_modules is not committed
-npm run dev          # API :5174 + Vite UI :5173
-npm run demo         # rebuild the synthetic demo history (stop the server first on Windows)
-npm run reset        # close every period
-npm run preview      # build the UI and serve everything from :5174
-```
-
-```bash
+npm install             # first — node_modules is not committed
+npm run dev             # API :5174 + Vite UI :5173 (server auto-loads Claude_Data/ if empty)
+npm run data:load       # import Claude_Data/ and rebuild all monthly packs (stop the server first)
+npm run reset           # clear the imported set, packs and narrative cache
+npm run preview         # build the UI and serve everything from :5174
 npm run verify:real     # engine vs SLA_Expected_Results.xlsx; must report 0 diffs
-npm test                # engine unit tests (node:test)
+npm test                # unit tests (node:test): calendar boundaries, narrative guards
 npm run mapping:extract # regenerate config/mapping-23b.json from the workbook
+npm run bedrock:check   # diagnose Bedrock access
 ```
-
-`npm run demo` / `seed` / `reset` belong to the old demo and are being removed in Iteration 2.
 
 ## Architecture map
 
+```
+Claude_Data/*.csv|xlsx ─▶ engine/extracts (identify by columns) ─▶ engine/workflows (union open+closed,
+  as-of date) ─▶ engine/rules (23A, 23B NUL/UL 1-3, 23C, 23E → item outcomes) ─▶ engine/engine (monthly
+  roll-up) ─▶ pipeline.rebuild ─▶ data/analyses/<month>.json + data/snapshot.json ─▶ API ─▶ UI
+```
+
 | Area | Files |
 |---|---|
-| Ingest → pack pipeline | [server/pipeline.js](server/pipeline.js) (`ingest`, `generate`) |
-| File parsing (xlsx / csv / pdf → one doc shape) | [server/parse.js](server/parse.js) |
-| Content-only classification, solved as a set | [server/classify.js](server/classify.js) + [config/source-templates.json](config/source-templates.json) |
-| Per-source metric adapters | [server/adapters/](server/adapters/) |
-| RAG scoring | [server/slaEngine.js](server/slaEngine.js) + [config/sla-metrics.json](config/sla-metrics.json) |
-| Data-quality flags | [server/dataQuality.js](server/dataQuality.js) |
-| Storage (`data/uploads`, `data/analyses`) | [server/store.js](server/store.js) |
-| Phase 2 intelligence / narrative / Q&A | [server/intelligence.js](server/intelligence.js), [server/narrative.js](server/narrative.js), [server/assistant.js](server/assistant.js) |
-| API routes | [server/index.js](server/index.js) |
-| UI | [src/App.jsx](src/App.jsx), [src/views/](src/views/), [src/components/](src/components/) |
-| Synthetic data generators (old demo, to be deleted) | [scripts/](scripts/) (`seed.js`, `scenario.js`, `generators/`) |
-| **New SLA engine (real data)** | [server/engine/](server/engine/): `extracts` → `workflows` → `rules` → `engine.evaluate()` |
 | SLA definitions, calendar, 23B mapping | [config/sla-schedule.json](config/sla-schedule.json), [config/mapping-23b.json](config/mapping-23b.json) |
+| SLA engine (pure, no I/O except config) | [server/engine/](server/engine/): `datetime`, `calendar`, `extracts`, `workflows`, `rules`, `outcome`, `engine` |
+| Extract set → monthly packs | [server/pipeline.js](server/pipeline.js), [server/slots.js](server/slots.js) |
+| Data-quality findings | [server/quality.js](server/quality.js) |
+| Failure concentration (drivers) | [server/insights.js](server/insights.js) |
+| Storage (`data/extracts`, `data/analyses`, `data/snapshot.json`) | [server/store.js](server/store.js) |
+| Intelligence / narrative / Q&A | [server/intelligence.js](server/intelligence.js), [server/narrative.js](server/narrative.js), [server/assistant.js](server/assistant.js) |
+| API routes | [server/index.js](server/index.js) |
+| UI (design kept) | [src/App.jsx](src/App.jsx), [src/views/](src/views/), [src/components/](src/components/), [src/styles.css](src/styles.css) |
 | Acceptance harness | [scripts/verify-real.js](scripts/verify-real.js) |
 
 ## Project rules
 
 - **Classification uses content only.** Filenames are never inspected. This holds for the
   real extracts too: derive the source type and the extract (as-of) date from content.
-- **No model-generated numbers.** Every SLA figure comes from deterministic code. The
-  narrative and assistant only phrase pre-computed figures, and the fabrication guard
-  enforces that.
-- **One current pack per month.** Regenerating overwrites; there are no parallel drafts.
+- **No model-generated numbers or claims.** Every SLA figure comes from deterministic code. The
+  narrative and assistant only phrase pre-computed figures. Two guards enforce this:
+  `unsupportedFigures` (every number must be in the input) and `contradictedClaims` (no
+  inverted pass/fail).
+- **No invented logic.** Rules, targets, holidays and mapping come from the workbook. No
+  forecasts, amber bands or service credits, because the data defines none of them.
+- **One current pack per month.** The packs are derived from the whole extract set, and a
+  rebuild replaces all of them. One current file per slot: a new upload for a filled slot
+  supersedes the old one.
 - **The oracle is the definition of done.** Engine work on the real data is complete only
   when `Claude_Data/SLA_Expected_Results.xlsx` reproduces with zero diffs.
 - Match the surrounding code style: ES modules, small pure functions, explanatory block
@@ -146,9 +153,18 @@ Add to this list whenever something bites.
 - The user does **not** want changes on `main`. Work and commit on
   `feature/real-bancs-data`, or another feature branch.
 
+- A pass/fail figure can be real and still stated backwards. The Bedrock narrative once said
+  23C failed at 96.97% (target 96%). Keep met/missed as explicit lists in any model brief.
+- Drivers: a big group failing at about the average rate is not a concentration. Require
+  at least 1.25× the SLA rate, and rank by excess failures.
+- Each extract ships as both .csv and .xlsx. Never load both, or every record counts twice.
+  The slot model enforces this.
+
 **Environment (Windows)**
-- Stop the server before `npm run demo` / `reset`, because open handles block deletes
-  (see README).
+- Stop the server before `npm run data:load` / `reset`, because open handles block deletes.
+- Tracked text files have **CRLF** line endings in the working copy (autocrlf). A
+  `
+`-anchored regex edit silently matches nothing, so use the Edit tool or normalise first.
 - Python prints to a cp1252 console, so set `PYTHONIOENCODING=utf-8` when printing
   workbook text.
 - There is no pandas or openpyxl. Use `exceljs` via Node (`npm install` has now been run).

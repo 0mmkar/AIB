@@ -4,12 +4,12 @@ node_modules/
 # build output
 dist/
 
-# runtime state — recreated by `npm run demo`, not source
-data/uploads/
-data/analyses/
+# runtime state — the imported extract set, the monthly packs built from it and the
+# narrative cache. Rebuilt by `npm run data:load`, or automatically on server start.
+data/
 
-# the synthetic source files ARE committed (data/seed, data/holdback) so the repo is
-# self-contained and the demo runs straight after clone.
+# The delivered BaNCS extracts in Claude_Data/ ARE committed, so the repo runs straight
+# after clone.
 
 # local env
 .env
@@ -27,6 +27,3 @@ Thumbs.db
 b64*.txt
 log*.txt
 console.json
-
-# generated narrative cache
-data/narratives/

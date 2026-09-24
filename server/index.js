@@ -5,24 +5,42 @@ import path from 'node:path';
 import express from 'express';
 import multer from 'multer';
 
-import { SOURCE_TEMPLATES, templateById } from './classify.js';
-import { SLA_METRICS } from './slaEngine.js';
-import { ingest, generate } from './pipeline.js';
+import { loadSchedule } from './engine/engine.js';
+import { isFailure } from './insights.js';
+import { EXTRACT_SLOTS } from './slots.js';
+import { importExtracts, removeExtract, rebuild, loadBundled, slotStatus } from './pipeline.js';
 import { buildIntelligence } from './intelligence.js';
 import { generateNarrative, narrativeStatus } from './narrative.js';
 import { askAssistant, suggestedQuestions } from './assistant.js';
-import {
-  ROOT, listMonths, monthLabel, isMonthKey, createSpace, currentMonthKey,
-  readUploadIndex, writeUploadIndex, readAnalysis, deleteUploadFile, listSampleFiles,
-} from './store.js';
+import { ROOT, listMonths, isMonthKey, readAnalysis, readSnapshot, readExtractIndex } from './store.js';
 
 const app = express();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024, files: 12 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024, files: 12 } });
 
 app.use(express.json());
 
 const PORT = process.env.PORT || 5174;
 const fail = (res, code, message) => res.status(code).json({ error: message });
+
+/**
+ * Imports and rebuilds rewrite every pack, so they run one at a time. Reads are not
+ * serialised — a pack is written whole, and a reader sees either the old or the new one.
+ */
+let queue = Promise.resolve();
+const exclusive = (fn) => {
+  const run = queue.then(fn, fn);
+  queue = run.catch(() => {});
+  return run;
+};
+
+const publicEntry = ({ stored: _s, ...rest }) => rest;
+
+function snapshotSummary() {
+  const s = readSnapshot();
+  if (!s) return null;
+  const { totals: _t, sources: _src, ...rest } = s;
+  return { ...rest, sourceCount: s.sources.length };
+}
 
 // --- routes -----------------------------------------------------------------
 
@@ -31,158 +49,123 @@ app.get('/api/bootstrap', (req, res) => {
     const a = readAnalysis(m);
     return {
       month: m,
-      label: monthLabel(m),
+      label: a?.label ?? m,
+      partial: !!a?.partial,
       generatedAt: a?.generated_at ?? null,
-      uploadCount: readUploadIndex(m).length,
-      sourceCount: a?.source_files?.length ?? 0,
-      sampleCount: listSampleFiles(m).filter((f) => !f.heldBack).length,
-      qualityFlags: a?.quality_summary?.total ?? 0,
       summary: a?.summary ?? null,
+      qualityFlags: a?.quality_summary ?? null,
     };
   });
-  const current = currentMonthKey();
   res.json({
     months,
-    currentMonth: current,
-    currentMonthLabel: monthLabel(current),
-    currentMonthOpen: months.some((m) => m.month === current),
-    sourceTemplates: SOURCE_TEMPLATES.map(({ id, label, blurb, metricSource }) => ({ id, label, blurb, metricSource })),
-    metrics: SLA_METRICS,
+    snapshot: snapshotSummary(),
+    slas: loadSchedule().slas,
+    slots: EXTRACT_SLOTS,
   });
 });
 
-/** Open a reporting period — this is what "start SLA governance" does. */
-app.post('/api/spaces/:month', (req, res) => {
-  const { month } = req.params;
-  if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
-  const result = createSpace(month);
-  res.json({ ...result, label: monthLabel(month), sampleCount: listSampleFiles(month).length });
+app.get('/api/extracts', (req, res) => {
+  res.json({ extracts: readExtractIndex().map(publicEntry), slots: slotStatus(), snapshot: snapshotSummary() });
 });
 
-app.get('/api/uploads/:month', (req, res) => {
-  const { month } = req.params;
-  if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
-  res.json({ month, uploads: readUploadIndex(month), samples: listSampleFiles(month) });
-});
-
-app.post('/api/uploads/:month', upload.array('files', 12), async (req, res) => {
-  const { month } = req.params;
-  if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
+app.post('/api/extracts', upload.array('files', 12), async (req, res) => {
   if (!req.files?.length) return fail(res, 400, 'No files received');
   const incoming = req.files.map((f) => ({ originalName: f.originalname, buffer: f.buffer }));
-  res.json({ month, ...(await ingest(month, incoming)) });
-});
-
-/** Stage the bundled sample files - a fallback when drag-and-drop is not practical. */
-app.post('/api/uploads/:month/samples', async (req, res) => {
-  const { month } = req.params;
-  if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
-  const wantHeld = req.body?.heldBack === true;
-  const files = listSampleFiles(month).filter((f) => f.heldBack === wantHeld);
-  if (!files.length) return fail(res, 404, wantHeld ? 'No held-back sample for this month' : 'No sample files for this month');
-
-  const existing = new Set(readUploadIndex(month).map((e) => e.filename));
-  const incoming = files
-    .filter((f) => !existing.has(f.name))
-    .map((f) => ({ originalName: f.name, buffer: fs.readFileSync(f.absolute) }));
-  if (!incoming.length) return res.json({ month, added: [], skipped: [], note: 'Already staged' });
-
-  res.json({ month, ...(await ingest(month, incoming)) });
-});
-
-/** Confirm or correct a classification. This is the governance trust layer. */
-app.patch('/api/uploads/:month/:uploadId', (req, res) => {
-  const { month, uploadId } = req.params;
-  const { sourceId, confirmed } = req.body ?? {};
-  if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
-
-  const index = readUploadIndex(month);
-  const entry = index.find((e) => e.uploadId === uploadId);
-  if (!entry) return fail(res, 404, 'Upload not found');
-
-  if (sourceId) {
-    const tpl = templateById(sourceId);
-    if (!tpl) return fail(res, 400, `Unknown source type "${sourceId}"`);
-    if (sourceId !== entry.sourceId) {
-      entry.autoSourceId = entry.autoSourceId ?? entry.sourceId;
-      entry.sourceId = sourceId;
-      entry.sourceLabel = tpl.label;
-      entry.blurb = tpl.blurb;
-      entry.confidence = 1;
-      entry.confirmedBy = 'user-corrected';
-    }
-  }
-  if (confirmed) entry.confirmedBy = entry.confirmedBy === 'user-corrected' ? 'user-corrected' : 'user-confirmed';
-
-  writeUploadIndex(month, index);
-  res.json(entry);
-});
-
-app.delete('/api/uploads/:month/:uploadId', (req, res) => {
-  const { month, uploadId } = req.params;
-  if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
-  const index = readUploadIndex(month);
-  const entry = index.find((e) => e.uploadId === uploadId);
-  if (entry) deleteUploadFile(month, entry.stored);
-  writeUploadIndex(month, index.filter((e) => e.uploadId !== uploadId));
-  res.json({ ok: true });
-});
-
-app.post('/api/generate/:month', async (req, res) => {
-  const { month } = req.params;
-  if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
-  if (!readUploadIndex(month).length) return fail(res, 400, 'No source files uploaded for this period');
   try {
-    res.json(await generate(month));
+    const out = await exclusive(async () => {
+      const result = await importExtracts(incoming);
+      const snapshot = result.added.length ? await rebuild() : readSnapshot();
+      return { ...result, added: result.added.map(publicEntry), rebuilt: result.added.length > 0, snapshot: !!snapshot };
+    });
+    res.json(out);
   } catch (err) {
     fail(res, 500, err.message);
   }
 });
 
+app.delete('/api/extracts/:id', async (req, res) => {
+  try {
+    const removed = await exclusive(async () => {
+      const ok = removeExtract(req.params.id);
+      if (ok) await rebuild();
+      return ok;
+    });
+    if (!removed) return fail(res, 404, 'Extract not found');
+    res.json({ ok: true });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+app.post('/api/extracts/rebuild', async (req, res) => {
+  try {
+    const snapshot = await exclusive(() => rebuild());
+    if (!snapshot) return fail(res, 400, 'No extracts loaded');
+    res.json({ ok: true, months: snapshot.months.length });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+/** Reload the delivered extracts from Claude_Data/ (they supersede same-slot uploads). */
+app.post('/api/extracts/bundled', async (req, res) => {
+  try {
+    const snapshot = await exclusive(() => loadBundled());
+    if (!snapshot) return fail(res, 404, 'No delivered extracts found in Claude_Data/');
+    res.json({ ok: true, months: snapshot.months.length });
+  } catch (err) {
+    fail(res, 500, err.message);
+  }
+});
+
+/** One month's pack. Carries its failures (missed + overdue) but not every measured item. */
 app.get('/api/analysis/:month', (req, res) => {
   const { month } = req.params;
   if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
   const a = readAnalysis(month);
-  if (!a) return fail(res, 404, 'No pack has been generated for this period yet');
-  res.json(a);
+  if (!a) return fail(res, 404, 'No pack for this period');
+  const { items, ...rest } = a;
+  res.json({ ...rest, exceptions: items.filter(isFailure), itemCount: items.length });
+});
+
+/** Item-level drill-down for a month, optionally narrowed to one SLA and/or outcome. */
+app.get('/api/items/:month', (req, res) => {
+  const { month } = req.params;
+  if (!isMonthKey(month)) return fail(res, 400, 'Invalid reporting month');
+  const a = readAnalysis(month);
+  if (!a) return fail(res, 404, 'No pack for this period');
+  const sla = req.query.sla ? String(req.query.sla) : null;
+  const outcome = req.query.outcome ? String(req.query.outcome) : null;
+  const def = sla ? loadSchedule().slas.find((s) => s.id === sla) : null;
+  const slaIds = def?.parts ?? (sla ? [sla] : null);
+  const items = a.items.filter((i) => (!slaIds || slaIds.includes(i.sla)) && (!outcome || i.outcome === outcome));
+  res.json({ month, sla, outcome, count: items.length, items });
 });
 
 /**
- * Phase 2 — operational intelligence over the whole history.
- * `scope` is 'all' or a month key; a month narrows the window to that month and everything
- * before it, so a past period is analysed with the context that existed at the time.
+ * Operational intelligence over the whole history. `scope` is 'all' or a month key; a month
+ * narrows the window to that month and everything before it.
  */
 app.get('/api/intelligence', async (req, res) => {
   const scope = req.query.scope && req.query.scope !== 'all' ? String(req.query.scope) : 'all';
   if (scope !== 'all' && !isMonthKey(scope)) return fail(res, 400, 'Invalid scope');
-
   try {
     const intel = buildIntelligence({ scope });
     if (intel.empty) return res.json({ ...intel, narrative: null, narrativeStatus: narrativeStatus() });
-
     const narrative = await generateNarrative(intel, { refresh: req.query.refresh === '1' });
-    res.json({
-      ...intel,
-      narrative,
-      narrativeStatus: narrativeStatus(),
-      suggestedQuestions: suggestedQuestions(intel),
-    });
+    res.json({ ...intel, narrative, narrativeStatus: narrativeStatus(), suggestedQuestions: suggestedQuestions(intel) });
   } catch (err) {
     fail(res, 500, err.message);
   }
 });
 
-/**
- * Grounded Q&A over one report's computed outputs. Deliberately stateless and single-turn —
- * this is a lookup layer over the intelligence payload, not a conversational agent.
- */
+/** Grounded, single-turn Q&A over one report's computed outputs. */
 app.post('/api/intelligence/ask', async (req, res) => {
   const { question, scope: rawScope } = req.body ?? {};
   const scope = rawScope && rawScope !== 'all' ? String(rawScope) : 'all';
   if (scope !== 'all' && !isMonthKey(scope)) return fail(res, 400, 'Invalid scope');
   if (!String(question ?? '').trim()) return fail(res, 400, 'Ask a question about the report');
   if (String(question).length > 400) return fail(res, 400, 'Question is too long');
-
   try {
     const intel = buildIntelligence({ scope });
     if (intel.empty) return fail(res, 400, 'No history to answer from yet');
@@ -192,7 +175,7 @@ app.post('/api/intelligence/ask', async (req, res) => {
   }
 });
 
-// Serve the built frontend when one exists, so the demo can run from a single process.
+// Serve the built frontend when one exists, so everything can run from a single process.
 const DIST = path.join(ROOT, 'dist');
 if (fs.existsSync(DIST)) {
   app.use(express.static(DIST));
@@ -200,25 +183,22 @@ if (fs.existsSync(DIST)) {
 }
 
 /**
- * On a host with an ephemeral filesystem the uploads and packs vanish on every restart,
- * leaving a dashboard with nothing on it. Rebuilding the demo history when none is found
- * makes a cold start self-healing. Local runs are untouched, because local state persists.
- *
- * Set SKIP_BOOTSTRAP_DEMO=1 to deploy an genuinely empty instance.
+ * With no extract set loaded — a fresh clone, or a host with an ephemeral disk — load the
+ * delivered extracts from Claude_Data/ so the dashboard is never empty.
+ * SKIP_BOOTSTRAP_DATA=1 starts genuinely empty instead.
  */
-async function ensureDemoHistory() {
-  if (process.env.SKIP_BOOTSTRAP_DEMO === '1') return;
-  if (listMonths().length) return;
+async function ensureData() {
+  if (process.env.SKIP_BOOTSTRAP_DATA === '1') return;
+  if (readSnapshot() && listMonths().length) return;
   try {
-    const { prepareDemo } = await import('./prepareDemo.js');
-    const built = await prepareDemo();
-    if (built.length) console.log(`cold start — rebuilt demo history: ${built.join(', ')}`);
+    const snapshot = await exclusive(() => (readExtractIndex().length ? rebuild() : loadBundled()));
+    if (snapshot) console.log(`loaded extract set as of ${snapshot.as_of} — ${snapshot.months.length} reporting periods`);
   } catch (err) {
-    console.warn(`could not rebuild demo history: ${err.message}`);
+    console.warn(`could not load the extract set: ${err.message}`);
   }
 }
 
 app.listen(PORT, async () => {
-  console.log(`AIB Life prototype API  ->  http://localhost:${PORT}`);
-  await ensureDemoHistory();
+  console.log(`AIB Life SLA governance API  ->  http://localhost:${PORT}`);
+  await ensureData();
 });
