@@ -12,7 +12,10 @@
     "seed": "node scripts/seed.js",
     "reset": "node scripts/reset.js",
     "demo": "node scripts/prepare-demo.js",
-    "bedrock:check": "node scripts/check-bedrock.js"
+    "bedrock:check": "node scripts/check-bedrock.js",
+    "test": "node --test \"server/**/*.test.js\"",
+    "verify:real": "node scripts/verify-real.js",
+    "mapping:extract": "node scripts/extract-mapping.js"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "^0.33.4",

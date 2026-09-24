@@ -1,0 +1,586 @@
+{
+  "$comment": "Verbatim copy of 'Mapping for 23B' from SLA_Expected_Results.xlsx. Regenerate with: node scripts/extract-mapping.js",
+  "rows": [
+    {
+      "product": "360 Invest",
+      "transaction": "Cancel Regular Contribution due to Claim",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Change Contribution Collection Day",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Change FATCA Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Change Primary Advisor",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Update Contribution Payer Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Update Life Covered Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Add Infletion Protection Annual Increase",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "Ul",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Apply Yearly Contribution Increase",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Change Future Contribution Fund Allocation",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Pay Arrear Contribution",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Remove Infletion Protection Annual Increase",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Voluntary Contribution Decrease",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Voluntary Contribution Increase",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "360 Invest",
+      "transaction": "Apply Yearly Contribution Increase",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Cancel Premium Holiday",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Change Discount",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Change Payer Bank Account Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Change Premium Collection Day",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Change Primary Occupation",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Change Smoker Status From Non-Smoker to Smoker",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Decrease in Income",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Decrease Waiting Period",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Increase Cover Term",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Increase in Income",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Increase Waiting Period",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Remove No Dealings",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Remove Standalone",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Remove Standalone Benefit due to Claim",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Request Premium Holiday",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Request Underwriting Review",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": "Underwriting Assessment"
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Update Contracting Party Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Update Role Player Contact Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Waive Premium due to Claim",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "360 Protect",
+      "transaction": "Add Standalone",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": "Underwriting Assessment-Add Standalone & Approve - Add Standalone"
+    },
+    {
+      "product": "Approved Retirement Fund",
+      "transaction": "Change Income Payment Frequency",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Approved Retirement Fund",
+      "transaction": "Change Income Recipient Bank Account Details ",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Approved Retirement Fund",
+      "transaction": "Update Income Recipient Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Approved Retirement Fund",
+      "transaction": "Change Annuity Payment Drawdown",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Approved Retirement Fund",
+      "transaction": "Change Annuity Payment Fund",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Approved Retirement Fund",
+      "transaction": "Special Activate Transfers",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": "Funds"
+    },
+    {
+      "product": "Business Protection",
+      "transaction": "Add No Dealings",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Business Protection",
+      "transaction": "Change Collection Reference",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Business Protection",
+      "transaction": "Change Premium Frequency",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Add Security Assignment",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Change Premium Payer",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Change Smoker Status From Smoker to Non-Smoker",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": "Underwriting Assessment - Change Smoker Status From Smoker to Non-Smoker"
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Decrease Cover Term",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Guaranteed Insurability Increase Cover Term",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": "Underwriting Assessment"
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Guaranteed Insurability VCI",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Increase Accelerator",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Life Basis Change",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Pay Arrear Premium",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Reduce Standalone due to Claim",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Remove Security Assignment",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Remove Temporary Loading at end of its term",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Voluntary Cover Decrease",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Voluntary Cover Increase",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": "Underwriting Assessment-Voluntary Cover Increase & Approve - Voluntary Cover Increase"
+    },
+    {
+      "product": "Mortgage Protection",
+      "transaction": "Remove Temporary Loading at end of its term",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Pension Life Cover",
+      "transaction": "Add ACI",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Pension Life Cover",
+      "transaction": "Apply ACI",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Add Legal Third Party Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Amend Normal Retirement Age",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Automatic Contribution Schedule Termination",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Cancel Contribution Holiday",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Cancel Regular Contribution",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Change Contribution Payer",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Change Regular Contribution Frequency",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Change Regular Contribution Start Date",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Delete Legal Third Party Details",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Pension Adjustment Order",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Request Contribution Holiday",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Waive Arrear Contribution",
+      "statement": "96% of non-unit-linked policy alterations processed by EOD following day of receipt.",
+      "code": "NUL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Add Lifestyling",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Anniversary Process",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Provide Leaving Service Options",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Remove Lifestyling",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Add Lump Sum Contribution",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": "Funds & Approval"
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Add Regular Contribution",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Refund of Contribution",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Retirement",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Transfer In",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": "Funds"
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Transfer Out",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    },
+    {
+      "product": "Personal Retirement Savings Account Non-Standard",
+      "transaction": "Apply Yearly Contribution Increase",
+      "statement": "98% of unit-linked transactions received by 3 pm processed same day.",
+      "code": "UL",
+      "dependency": null
+    }
+  ]
+}
