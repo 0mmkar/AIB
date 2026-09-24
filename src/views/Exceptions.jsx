@@ -1,67 +1,80 @@
-import { SourceChip, Rag, CreditTag } from '../components/Chips.jsx';
-import { IconShield, IconCircleCheck, IconSpark } from '../components/Icons.jsx';
-import { fmtValue, fmtTarget, fmtVariance, fmtTolerance } from '../lib/format.js';
+import { useMemo, useState } from 'react';
+import { Status } from '../components/Chips.jsx';
+import ItemTable from '../components/ItemTable.jsx';
+import { DriversPanel, slaLabeller } from './Position.jsx';
+import { IconShield, IconCircleCheck } from '../components/Icons.jsx';
+import { fmtRate, fmtTarget, fmtGap, fmtCount } from '../lib/format.js';
 
-function ExceptionRow({ r, sourceIdFor }) {
+function ExceptionRow({ r, steps }) {
   return (
-    <div className={`exception-card${r.serviceCredit ? ' is-credit' : ''}`}>
+    <div className="exception-card">
       <div>
         <div className="row wrap" style={{ gap: 9 }}>
-          <span className="exception-name">{r.name}</span>
-          {r.serviceCredit && <CreditTag />}
+          <span className="exception-name">{r.label} · {r.name}</span>
         </div>
-        <div className="exception-meta row" style={{ gap: 6 }}>
-          <SourceChip sourceId={sourceIdFor(r)} label={r.source} plain />
-          <span>· {r.sampleSize ? `${r.sampleSize.toLocaleString()} records` : 'no records'} · tolerance {fmtTolerance(r)}</span>
+        <div className="exception-meta">
+          {fmtCount(r.met)} met · {fmtCount(r.missed)} missed
+          {r.openPastDeadline ? ` · ${fmtCount(r.openPastDeadline)} open past deadline` : ''}
+          {steps.length > 0 && ` · below target: ${steps.map((s) => `${s.label} (${fmtRate(s.rateCompleted)})`).join(', ')}`}
         </div>
       </div>
       <div className="exception-figures">
         <div className="figure">
           <div className="figure-label">Target</div>
-          <div className="figure-value" style={{ color: 'var(--ink-3)' }}>{fmtTarget(r)}</div>
+          <div className="figure-value" style={{ color: 'var(--ink-3)' }}>{fmtTarget(r.target)}</div>
         </div>
         <div className="figure">
-          <div className="figure-label">Actual</div>
-          <div className="figure-value is-bad">{fmtValue(r.actual, r.unit)}</div>
+          <div className="figure-label">Rate</div>
+          <div className="figure-value is-bad">{fmtRate(r.rateCompleted)}</div>
         </div>
         <div className="figure">
-          <div className="figure-label">Variance</div>
-          <div className="figure-value is-bad">{fmtVariance(r, r.variance)}</div>
+          <div className="figure-label">Gap</div>
+          <div className="figure-value is-bad">{fmtGap(r.rateCompleted, r.target)}</div>
         </div>
-        <Rag status={r.rag} />
+        <Status status={r.status} />
       </div>
     </div>
   );
 }
 
-export default function Exceptions({ analysis, sourceIdFor }) {
-  const results = analysis.sla_results;
-  const breaches = results.filter((r) => r.rag === 'RED');
-  const atRisk = results.filter((r) => r.rag === 'AMBER');
-  const creditBreaches = breaches.filter((r) => r.serviceCredit);
-  const creditTotal = results.filter((r) => r.serviceCredit).length;
+export default function Exceptions({ analysis, slas }) {
+  const [sla, setSla] = useState(null);
+  const [kind, setKind] = useState(null);
+  const label = slaLabeller(slas);
+  const { results, exceptions } = analysis;
+
+  const failing = results.filter((r) => !r.parent && r.status === 'FAIL');
+  const headline = results.filter((r) => !r.parent);
+
+  const counts = useMemo(() => {
+    const c = {};
+    for (const i of exceptions) c[i.sla] = (c[i.sla] || 0) + 1;
+    return c;
+  }, [exceptions]);
+
+  const shown = exceptions.filter((i) => (!sla || i.sla === sla) && (!kind || i.outcome === kind));
+  const missed = exceptions.filter((i) => i.outcome === 'MISSED').length;
+  const overdue = exceptions.length - missed;
 
   return (
     <>
-      <div className="card" style={{ background: creditBreaches.length ? 'linear-gradient(104deg, var(--papaya) 0%, #fff 46%)' : undefined, borderColor: creditBreaches.length ? 'var(--apricot)' : undefined }}>
+      <div className="card" style={{ background: failing.length ? 'linear-gradient(104deg, var(--red-bg) 0%, #fff 46%)' : undefined, borderColor: failing.length ? '#f6cdd5' : undefined }}>
         <div className="card-pad row" style={{ gap: 16 }}>
           <div style={{
-            width: 46, height: 46, borderRadius: 15, display: 'grid', placeItems: 'center',
-            background: creditBreaches.length ? 'var(--apricot)' : 'var(--green-bg)',
-            color: creditBreaches.length ? '#8a4f14' : 'var(--green)', flex: '0 0 46px',
+            width: 46, height: 46, borderRadius: 15, display: 'grid', placeItems: 'center', flex: '0 0 46px',
+            background: failing.length ? '#fbdde3' : 'var(--green-bg)', color: failing.length ? 'var(--red)' : 'var(--green)',
           }}>
             <IconShield size={22} />
           </div>
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: 16 }}>
-              {creditBreaches.length
-                ? `${creditBreaches.length} of ${creditTotal} service-credit metrics in breach`
-                : 'No service-credit exposure this period'}
+              {failing.length
+                ? `${failing.length} of ${headline.length} service levels missed target in ${analysis.label}`
+                : `Every service level with completed items met target in ${analysis.label}`}
             </h2>
             <p className="tiny muted" style={{ marginTop: 5, lineHeight: 1.55 }}>
-              {creditBreaches.length
-                ? `${creditBreaches.map((r) => r.name).join(', ')} — these are the metrics that carry a contractual financial consequence, so they lead the governance conversation.`
-                : 'Every metric carrying a contractual financial consequence is inside its threshold for this period.'}
+              {fmtCount(missed)} item{missed === 1 ? '' : 's'} missed {missed === 1 ? 'its' : 'their'} deadline and {fmtCount(overdue)}{' '}
+              {overdue === 1 ? 'is' : 'are'} still open past it. Every one is listed below with the record it came from.
             </p>
           </div>
         </div>
@@ -70,19 +83,20 @@ export default function Exceptions({ analysis, sourceIdFor }) {
       <div className="card">
         <div className="card-head">
           <div>
-            <h2>Breaches</h2>
-            <div className="sub">Beyond tolerance — service-credit metrics listed first</div>
+            <h2>Missed target</h2>
+            <div className="sub">Rate (completed) below the Schedule 23 target</div>
           </div>
-          <span className="tag warm">{breaches.length} of {results.length}</span>
+          <span className="tag warm">{failing.length} of {headline.length}</span>
         </div>
         <div className="card-pad">
-          {breaches.length ? (
-            [...breaches].sort((a, b) => Number(b.serviceCredit) - Number(a.serviceCredit))
-              .map((r) => <ExceptionRow key={r.id} r={r} sourceIdFor={sourceIdFor} />)
+          {failing.length ? (
+            failing.map((r) => (
+              <ExceptionRow key={r.id} r={r} steps={results.filter((x) => x.parent === r.id && x.status === 'FAIL')} />
+            ))
           ) : (
             <div className="row" style={{ gap: 10, color: 'var(--green)' }}>
               <IconCircleCheck size={18} />
-              <span className="tiny" style={{ color: 'var(--ink-2)' }}>No metric is in breach for this period.</span>
+              <span className="tiny" style={{ color: 'var(--ink-2)' }}>No service level missed target this period.</span>
             </div>
           )}
         </div>
@@ -91,40 +105,34 @@ export default function Exceptions({ analysis, sourceIdFor }) {
       <div className="card">
         <div className="card-head">
           <div>
-            <h2>At risk</h2>
-            <div className="sub">Missing target but still inside the metric's tolerance band</div>
+            <h2>Failed items</h2>
+            <div className="sub">Every item that missed its deadline or is still open past it</div>
           </div>
-          <span className="tag">{atRisk.length}</span>
+          <span className="tag">{fmtCount(exceptions.length)}</span>
         </div>
-        <div className="card-pad">
-          {atRisk.length ? (
-            atRisk.map((r) => <ExceptionRow key={r.id} r={r} sourceIdFor={sourceIdFor} />)
-          ) : (
-            <span className="tiny muted">Nothing sitting in the amber band.</span>
-          )}
+        <div className="filter-bar">
+          <button className={`scope-chip${!sla ? ' is-active' : ''}`} onClick={() => setSla(null)}>All SLAs</button>
+          {slas.filter((s) => counts[s.id]).map((s) => (
+            <button key={s.id} className={`scope-chip${sla === s.id ? ' is-active' : ''}`} onClick={() => setSla(s.id)}>
+              {s.label} · {fmtCount(counts[s.id])}
+            </button>
+          ))}
+          <span className="filter-sep" />
+          <button className={`scope-chip${!kind ? ' is-active' : ''}`} onClick={() => setKind(null)}>Both</button>
+          <button className={`scope-chip${kind === 'MISSED' ? ' is-active' : ''}`} onClick={() => setKind('MISSED')}>Missed</button>
+          <button className={`scope-chip${kind === 'OPEN - PAST DEADLINE' ? ' is-active' : ''}`} onClick={() => setKind('OPEN - PAST DEADLINE')}>Open overdue</button>
         </div>
+        <ItemTable items={shown} slaLabel={label} />
       </div>
 
-      <div className="teaser">
-        <div>
-          <div className="row" style={{ gap: 9 }}><IconSpark /><h3>Next phase — from reporting to prediction</h3></div>
-          <p>
-            Phase 1 answers "where are we". With a few months of packs stored, the same data answers
-            "where are we heading": trend lines per metric, a forecast breach date, and an early warning
-            before a service credit is actually incurred.
-          </p>
-          <div className="teaser-tags">
-            <span className="teaser-tag">Trend per metric</span>
-            <span className="teaser-tag">Predicted breach date</span>
-            <span className="teaser-tag">Root-cause clustering</span>
-            <span className="teaser-tag">Learned source formats</span>
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <h2>Where this period’s failures concentrate</h2>
+            <div className="sub">Groups failing at 1.25× their service level’s rate or more</div>
           </div>
         </div>
-        <div className="spark">
-          {[16, 22, 19, 28, 25, 34, 31, 42].map((h, i) => (
-            <i key={i} style={{ height: h }} className={i > 5 ? 'hot' : undefined} />
-          ))}
-        </div>
+        <div className="card-pad"><DriversPanel drivers={analysis.drivers} slas={slas} /></div>
       </div>
     </>
   );

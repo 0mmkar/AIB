@@ -206,22 +206,22 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
   - `data/seed/`, `data/holdback/`
   - the matching npm scripts
 
-### Phase C — UI on the real data (Iteration 3), keeping the visual design
-- [ ] C0 Remove the old per-month ingest flow (confirm/correct classification, samples, held-back file) from the UI
-- [ ] C1 Routing:
+### Phase C — UI on the real data (Iteration 3), keeping the visual design — done
+- [x] C0 Remove the old per-month ingest flow (confirm/correct classification, samples, held-back file) from the UI
+- [x] C1 Routing:
   - a global **Extracts** screen, reached from the dashboard hero and the rail
   - per-month views: SLA position, Exceptions, Governance pack
-- [ ] C2 Dashboard:
+- [x] C2 Dashboard:
   - hero copy
   - stats: periods, rows processed, SLA fails, overdue open items
   - period cards: PASS/FAIL of the 5 headline SLAs, with a partial-month tag
-- [ ] C3 Rail: period cards show fails. Foot shows the extract as-of date.
-- [ ] C4 Extracts screen:
+- [x] C3 Rail: period cards show fails. Foot shows the extract as-of date.
+- [x] C4 Extracts screen:
   - drop zone
   - checklist of the 4 extract kinds (workflow expects open + closed)
   - file rows showing kind, records, header row and the SLAs fed
   - rebuild button
-- [ ] C5 SLA position table, per SLA:
+- [x] C5 SLA position table, per SLA:
   - target
   - met / missed / open overdue / open not yet due
   - Rate (Completed), Rate (incl. Open)
@@ -229,8 +229,8 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
   - PASS/FAIL
 
   The 23B UL steps are nested. The data-quality panel sits below.
-- [ ] C6 Exceptions: failing SLAs, plus an item-level table of missed and overdue items, filterable by SLA.
-- [ ] C7 Governance pack (print/PDF):
+- [x] C6 Exceptions: failing SLAs, plus an item-level table of missed and overdue items, filterable by SLA.
+- [x] C7 Governance pack (print/PDF):
   - executive summary composed from the figures
   - SLA table
   - exceptions
@@ -245,12 +245,12 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
   - where misses concentrate (assignee, product, workflow / transaction type)
   - backlog by SLA
 - [x] D2 Narrative and Q&A rewritten to phrase only those figures. Keep the Bedrock client, the disk cache, the rules fallback and the fabrication guard.
-- [ ] D3 Panel UI: trend chart (target line, fail region), SLA record, drivers, backlog, narrative and ask box.
+- [x] D3 Panel UI: trend chart (target line, fail region), SLA record, drivers, backlog, narrative and ask box.
 
-### Phase E — Finish (Iteration 5)
-- [ ] E1 README rewritten for the real data.
-- [ ] E2 `npm run build`, then a browser walk-through of the dashboard, extracts, month views, pack PDF and intelligence.
-- [ ] E3 `npm run verify:real` and `npm test` still green.
+### Phase E — Finish (done in Iteration 3)
+- [x] E1 README rewritten for the real data.
+- [x] E2 `npm run build`, then a browser walk-through of the dashboard, extracts, month views, pack PDF and intelligence.
+- [x] E3 `npm run verify:real` and `npm test` still green.
 
 
 ---
@@ -403,3 +403,63 @@ The plan was rewritten (§3) and §2.5 marked superseded, because the demo pipel
 - The Bedrock narrative after the fixes states every pass/fail correctly (checked by hand against the packs).
 
 **Next:** Iteration 3 (Phase C + D3): move the UI onto the new API while keeping the visual design.
+
+### Iteration 3 — 2026-09-24 · UI on the real data (design kept), README, end-to-end checks
+
+**Goal:** Phase C + D3 + E. Move every screen onto the new API while keeping the visual design, rewrite the README, and prove the whole flow in a browser.
+
+**Plan change:** Phase E (finish) was folded into this iteration. Iterations 4–5 are no longer needed.
+
+**Changes**
+- `src/App.jsx`: new routing.
+  - `#dashboard` and `#extracts` (a global screen, because one extract set feeds every month)
+  - `#<month>/position|exceptions|pack`
+  - `/intel`
+- New views and components:
+  - `src/views/Extracts.jsx` (replaces Ingest): drop zone, 5-slot checklist, file rows, reload / rebuild, set findings
+  - `src/views/Position.jsx` (replaces Consolidated): SLA table with the 23B UL steps nested, click-through to items, drivers, findings
+  - `src/components/ItemTable.jsx`
+- Rewritten on the new data (same design classes):
+  - `Dashboard.jsx`: grouped by year, pass/fail cards, partial-month tag
+  - `Exceptions.jsx`: failing SLAs plus every failed item, with filters
+  - `Pack.jsx`: the print document
+  - `Intelligence.jsx`: trend, SLA record, drivers, backlog, narrative, ask
+  - `Rail.jsx`: Extracts nav, pass/fail period cards
+  - `TrendChart.jsx`: rates vs target, fail region, clipped outliers
+  - `NarrativeCard.jsx`: verdict from data, new topic labels
+  - `AskReport.jsx`, `Chips.jsx` (`Status`, `Outcome`)
+  - `lib/format.js`, `lib/sources.js`, `api.js`
+- Deleted: `src/views/Ingest.jsx`, `src/views/Consolidated.jsx`, `src/components/ConfidenceRing.jsx`.
+- `src/styles.css`: one small block added (nested SLA rows, filter bar, item table, nowrap chips). The existing tokens and classes are reused throughout.
+- Server:
+  - `intelligence.js` returns `allMonths` for the scope picker
+  - `narrative.js` includes the completed-item count on the worst month
+  - `extracts.js` reads **only the first worksheet** and rejects the expected-results workbook
+  - new `server/engine/extracts.test.js`
+- `README.md` rewritten for Schedule 23 on the BaNCS extracts.
+
+**Errors faced**
+
+| # | Symptom | Root cause | Fix |
+|---|---|---|---|
+| E3.1 | A scripted edit of `NarrativeCard.jsx` failed ("missing: const TOPICS") | Regex literals such as `\b` inside a JS template string passed through a bash heredoc no longer matched the file text | Used the Edit tool for regex-bearing code |
+| E3.2 | 23C trend chart flattened into a line along the top | December 2024 holds 1 completed 23C item (0%), which stretched the axis to 0–100% | Values more than 40 pp below target are drawn clipped at the axis with their real value labelled. "Weakest month" now shows its completed-item count. |
+| E3.3 | The Service level record showed the latest month's PASS next to the whole-window rate (e.g. 23C 95.61% "PASS") | Mixed semantics in one cell | That cell now shows the window status |
+| E3.4 | Narrative highlighting boxed "23" in "23C" and "24" in "24 September 2026" | The figure regex had no letter or date awareness | Lookbehind/lookahead on alphanumerics, plus skip rules for day-of-month and "Step N" |
+| E3.5 | Tables overflowed the card at 1440 px: status chips wrapped, the outcome column was clipped | Too many columns and long labels | SLA name moved to a sub-line. Chips no longer wrap. Clock start → deadline share one cell. "Taken" folded into Completed. Outcome chips use short labels with the workbook term as tooltip. |
+| E3.6 | **`SLA_Expected_Results.xlsx` was accepted as a WITHDRAWALEXT** and replaced the real one (found by the upload test) | The reader searched every sheet, and the workbook's '23B UL Step 2' tab carries every WITHDRAWALEXT column | Read only the first worksheet (BaNCS exports are single-sheet). Reject the workbook by its tabs. Regression tests cover every extract in both formats and the workbook. |
+
+Note: the "exit code 127" notices for background servers were the servers stopped deliberately for restarts. They are not failures.
+
+**Verification**
+- `npx vite build` passes. Headless Edge screenshots were reviewed for Dashboard, Extracts, SLA position, Exceptions, Governance pack and Intelligence (Aug 2026). The August figures match the workbook line for line.
+- Upload scenario through the API:
+  - uploading the xlsx twins of EBQ and both WRKFLWEXT files replaced the csv copies with **unchanged totals**
+  - the workbook was rejected with a clear message
+  - removing WITHDRAWALEXT turned Step 2 to NO_DATA and raised a red "not supplied" finding
+  - "Reload delivered extracts" restored the set
+- Cold start: after `npm run reset`, a fresh server auto-loaded `Claude_Data/` and built 22 periods.
+- `npm test` → 24/24. `npm run verify:real` → 0 diffs.
+- The Bedrock narrative passes both guards, and every pass/fail it states is correct.
+
+**Next:** user review in the browser (`npm run dev`). Nothing is on `main`. Merging or opening a PR is the user's call.

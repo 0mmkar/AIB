@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { api } from '../api.js';
 
 /**
- * "Ask about this report" — a Q&A layer over the computed Phase 2 outputs.
+ * "Ask about this report" — a Q&A layer over the computed intelligence outputs.
  *
  * Deliberately not a chat window: single question, single answer, no history. It answers
  * from the figures the engine already calculated, and says so when a question falls outside
@@ -37,7 +37,7 @@ export default function AskReport({ scope, suggestions = [] }) {
           className="ask-input"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="e.g. why is Claims TAT flagged?"
+          placeholder="e.g. why did 23E miss target?"
           maxLength={400}
           aria-label="Ask a question about this report"
         />
@@ -69,7 +69,7 @@ export default function AskReport({ scope, suggestions = [] }) {
             {result.source === 'bedrock' && <span className="ask-tag">Answered by {result.model}</span>}
             {result.source === 'rules' && <span className="ask-tag">Answered from the computed figures</span>}
             {result.source === 'error' && <span className="ask-tag">Could not answer</span>}
-            {result.matchedMetric && <span className="ask-tag">{result.matchedMetric}</span>}
+            {result.matchedSla && <span className="ask-tag">{result.matchedSla}</span>}
             <span>Grounded in this report only — no outside data.</span>
             <button type="button" className="ask-chip" style={{ marginLeft: 'auto' }}
                     onClick={() => { setResult(null); setQuestion(''); }}>

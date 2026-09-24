@@ -1048,6 +1048,27 @@ p { margin: 0; }
 .demand-change.down { color: var(--green); }
 .demand-note { font-size: 12px; color: var(--ink-3); margin-top: 6px; }
 
+/* ------------------------------------------------- SLA table and item lists */
+
+.table tr.row-child td { background: var(--magnolia); }
+.table tr.row-child .metric-name { font-weight: 520; font-size: 13.5px; }
+.table tr.row-selected td { background: var(--violet-050); }
+.table tr.row-selected td:first-child { box-shadow: inset 3px 0 0 var(--violet); }
+.child-mark { color: var(--ink-4); margin: 0 6px 0 4px; }
+
+.filter-bar {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 12px 18px; border-bottom: 1px solid var(--line-2);
+}
+.filter-bar .scope-chip { padding: 5px 12px; font-size: 12.5px; }
+.filter-sep { width: 1px; height: 20px; background: var(--line); margin: 0 6px; }
+
+.mono { font-family: var(--mono); letter-spacing: -0.01em; }
+.rag { white-space: nowrap; }
+.item-table th, .item-table td { padding: 10px 12px; }
+.sla-table th, .sla-table td { padding-left: 12px; padding-right: 12px; }
+.item-table .metric-name { font-size: 13px; }
+
 /* ------------------------------------------------------------------- print */
 
 @media print {

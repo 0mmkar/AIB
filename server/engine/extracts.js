@@ -94,24 +94,29 @@ function parseCsv(text) {
   return rows;
 }
 
-/** Sheet grid as [{ row: <1-based spreadsheet row>, cells: [...] }]. */
+/**
+ * Sheet grid as [{ row: <1-based spreadsheet row>, cells: [...] }], plus the workbook's sheet
+ * names. BaNCS exports are single-sheet, so only the FIRST worksheet is read: searching every
+ * sheet let SLA_Expected_Results.xlsx pass as a withdrawal extract, because its
+ * '23B UL Step 2' tab repeats the WITHDRAWALEXT columns.
+ */
 async function readGrid(buffer, ext) {
   if (ext === 'csv') {
-    return parseCsv(buffer.toString('utf8')).map((cells, i) => ({ row: i + 1, cells }));
+    return { grid: parseCsv(buffer.toString('utf8')).map((cells, i) => ({ row: i + 1, cells })), sheets: [] };
   }
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buffer);
-  // The extracts are single-sheet; take the first sheet that carries a recognisable header.
-  const grids = wb.worksheets.map((ws) => {
-    const out = [];
-    ws.eachRow({ includeEmpty: false }, (r, rowNumber) => {
-      const vals = Array.isArray(r.values) ? r.values.slice(1).map(cellValue) : [];
-      out.push({ row: rowNumber, cells: vals });
-    });
-    return out;
+  const ws = wb.worksheets[0];
+  const grid = [];
+  ws?.eachRow({ includeEmpty: false }, (r, rowNumber) => {
+    const vals = Array.isArray(r.values) ? r.values.slice(1).map(cellValue) : [];
+    grid.push({ row: rowNumber, cells: vals });
   });
-  return grids.find((g) => locateHeader(g)) ?? grids[0] ?? [];
+  return { grid, sheets: wb.worksheets.map((w) => w.name) };
 }
+
+/** The expected-results workbook is reference material, recognisable by its own tabs. */
+const isExpectedResultsWorkbook = (sheets) => sheets.includes('Mapping for 23B') && sheets.includes('Monthly summary');
 
 function locateHeader(grid) {
   for (const line of grid.slice(0, HEADER_SCAN_ROWS)) {
@@ -132,7 +137,10 @@ export async function readExtract(buffer, filename) {
   const ext = (String(filename).split('.').pop() || '').toLowerCase();
   if (!['csv', 'xlsx'].includes(ext)) throw new Error(`Unsupported file type: .${ext} (expected .csv or .xlsx)`);
 
-  const grid = await readGrid(buffer, ext);
+  const { grid, sheets } = await readGrid(buffer, ext);
+  if (isExpectedResultsWorkbook(sheets)) {
+    throw new Error('This is the SLA expected-results workbook (rules, mapping and expected outcomes), not a BaNCS extract');
+  }
   const found = locateHeader(grid);
   if (!found) {
     throw new Error('Columns do not match any BaNCS extract (EBQ, CANREVEXT, WITHDRAWALEXT or WRKFLWEXT)');

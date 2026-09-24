@@ -1,256 +1,172 @@
-# AIB Life · SLA Governance — Phase 1 Prototype
+# AIB Life · SLA Governance — Schedule 23 on TCS BaNCS extracts
 
-Turns a pile of unlabelled monthly extracts into a governance pack: files are identified
-from their own structure, consolidated into 15 SLAs, scored against contracted thresholds,
-and published as an exportable pack — one current version per reporting month.
+The TCS BaNCS extracts go in. Every item in them is judged against the Schedule 23 service
+levels (23A, 23B NUL, 23B UL, 23C, 23E), using the business-day rules defined in
+`SLA_Expected_Results.xlsx`. The output is one governance pack per reporting month, plus an
+intelligence view across the whole history.
+
+The engine reproduces the expected-results workbook **exactly**: row by row and month by
+month, from both the `.csv` and the `.xlsx` extracts (`npm run verify:real`).
 
 ## Run it
 
 ```bash
 npm install
-npm run seed     # generate the synthetic source files (already committed under data/)
-npm run dev      # API on :5174, UI on :5173
+npm run dev        # API on :5174, UI on :5173
 ```
 
-Open **http://localhost:5173**. To run everything from a single process instead:
+Open **http://localhost:5173**. On first start the server loads the delivered extracts from
+`Claude_Data/` and builds every monthly pack, so the dashboard is never empty. To run
+everything from a single process instead:
 
 ```bash
-npm run preview  # builds the UI and serves it from the API on :5174
+npm run preview    # builds the UI and serves it from the API on :5174
 ```
 
-### Resetting between rehearsals
+| Command | What it does |
+|---|---|
+| `npm run data:load` | Import `Claude_Data/` and rebuild every pack. Stop the server first on Windows. |
+| `npm run reset` | Clear the imported set, the packs and the narrative cache |
+| `npm run verify:real` | Diff the engine against `SLA_Expected_Results.xlsx`. It must report 0 differences. |
+| `npm test` | Unit tests: calendar boundaries, extract identification, narrative guards |
+| `npm run mapping:extract` | Regenerate `config/mapping-23b.json` from the workbook |
+| `npm run bedrock:check` | Diagnose Amazon Bedrock access for the narrative |
 
-```bash
-npm run demo              # rebuild the exact demo starting state
-npm run reset -- 2026-09  # close just September, leave July and August alone
-npm run reset             # close every period
-```
+## The data — `Claude_Data/`
 
-`npm run demo` puts July (5 sources, 2 breaches) and August (4 sources, 6 breaches, tracker
-held back) on the dashboard and leaves September closed for the live run. It drives the same
-pipeline the UI does, so a prepared state is indistinguishable from a hand-driven one.
+| File | Rows | Feeds |
+|---|---|---|
+| `EBQ_Correspondence_Report_V0_24092026` | 10,000 | 23B NUL, 23B UL Step 1 |
+| `CANREVEXT_…` (Cancellation Tracker) | 2,000 | 23C |
+| `WITHDRAWALEXT_…` (Withdrawal extract) | 514 | 23B UL Step 2 |
+| `WRKFLWEXT_…13…` (Workflow extract, open items) | 231 | 23A, 23B UL Steps 2–3, 23C, 23E |
+| `WRKFLWEXT_…14…` (Workflow extract, closed items) | 5,124 | 23A, 23B UL Steps 2–3, 23C, 23E |
+| `SLA_Expected_Results.xlsx` | 10 tabs | Rules, targets, holidays, the 23B mapping, and the expected result for every row |
 
-> **Stop the server before running any of these.** On Windows a running server holds handles
-> on the uploaded files and the delete silently fails to complete — you get a period that
-> looks cleared but comes back. `prepare-demo.js` fails loudly if it hits this.
+Each extract ships as both `.csv` and `.xlsx`. The workbook's README says the data is
+synthetic but in the real extract format. The extracts are **one snapshot** covering
+December 2024 to September 2026, taken on 24 September 2026.
 
-## Brand asset
+## The service levels
 
-Save the official AIB Life logo as **`public/aib-life-logo.png`**. It appears in the sidebar,
-on the governance pack masthead, and as the browser tab icon. Until it is added, a neutral
-wordmark stands in — the app never renders a broken image. `npm run dev` picks the file up
-live; `npm run preview` needs a rebuild after adding it.
+| SLA | Target | Measured on | Met when |
+|---|---|---|---|
+| **23A** Policy issue | 97% | Workflows *Issue Policy Immediately / at a Later Date* | Closed the same business day (created before 15:00), or the same or next business day (15:00 or later) |
+| **23B NUL** Non-unit-linked alterations | 96% | EBQ rows mapped NUL (Product + Transaction) | Merged by the end of the next business day after receipt |
+| **23B UL** Unit-linked transactions | 98% | Steps 1–3 combined | — |
+| ↳ Step 1 | 98% | EBQ rows mapped UL | Merged the same business day |
+| ↳ Step 2 | 98% | Each withdrawal and its *Workflow for Withdrawal Approval* | Last status reached under the 3 pm rule |
+| ↳ Step 3 | 98% | *Workflow for Unit Adjustment* | Closed under the 3 pm rule |
+| **23C** Cancellations | 96% | Protection-product cancellations and their *Approve Cancellation* workflow | Under 48 hours |
+| **23E** Unrecognised EFT payments | 98% | *Manual Review* workflows mentioning "EFT Payment Not Recognised" | Closed the same or next business day |
 
-## Demo script
+Rules that apply across the service levels, all taken from the workbook:
+- Weekends and Irish public holidays are not business days.
+- A clock that starts on either one starts on the next business day, counted as before 15:00.
+- REJECTED EBQ items are excluded.
+- Open items are overdue once their deadline day is before the extract date.
 
-The app opens on the **governance dashboard**: the reporting periods already closed off
-(July and August), with their RAG split, breach count and service-credit exposure. A period
-only appears once it has been opened — sample files on disk do not conjure one into being.
+Each pack reports two rates:
+- **Rate (completed)** = met ÷ (met + missed). This decides **pass or fail**.
+- **Rate incl. open** also counts overdue open items as not met.
 
-**The live run — September 2026**
+Items are reported in these months:
+- EBQ items: the month they were received.
+- Workflow SLAs: the month the workflow was created.
+- Withdrawals with no workflow: the month of their last status.
 
-1. Click **Start SLA governance for current month**. A new reporting period opens and lands
-   on the ingest screen.
-2. Drag all five files from `data/seed/2026-09/` onto the drop zone —
-   `export_20260930_0621.xlsx`, `report (8).csv`, `Document7.pdf`, `Book2.xlsx`,
-   `Print_Output (3).pdf`. Nothing in those names says what they are.
-3. Each resolves at 92–97% confidence with the structural evidence shown underneath.
-   The checklist reads **5 of 5 sources received**.
-4. **Generate governance pack** → 12 on target, 1 at risk, 1 breach, 1 unscored. September
-   is the recovery month: August's claims-processing breach is back inside target.
-5. **SLA exceptions** → the one remaining breach is escalation resolution, service-credit
-   linked. **Governance pack** → *Export as PDF*.
-6. **Dashboard** → September now sits alongside July and August, 7 breaches down to 1.
+The workbook's traps are handled as it specifies:
+- duplicated mapping rows, the code `Ul`, trailing spaces
+- 14:59 vs 15:00
+- 47h59m30s vs 48h00m00s
+- superseded approval workflows (the latest one created before the event is used)
+- the `Recognized` decoys
+- Request IDs that have lost precision (never used as a key)
 
-**The "always current" beat — August 2026**
-
-Open August from the dashboard. Its ingest screen is labelled **Initiate re-ingestion**,
-because a pack already exists for the period — same screen, different intent. Click
-**Late-arriving file** (or drop `data/holdback/Book4.xlsx`). It classifies as the Excel
-tracker at 94% — its header sits on row 5 behind a merged title block. The stamp switches to
-*"New evidence since last run"*. **Regenerate** → complaint resolution TAT appears at
-9.2 days, breaches go 6 → 7, service-credit exposure 4 → 5, and the timestamp moves.
-
-To rehearse that beat again, delete the tracker from August's list with the ✕ and regenerate,
-or run `npm run demo`.
+Definitions live in [`config/sla-schedule.json`](config/sla-schedule.json). The mapping is
+in [`config/mapping-23b.json`](config/mapping-23b.json), a verbatim copy of the workbook tab.
 
 ## How it works
 
 ```
-file ─▶ parse (xlsx │ csv │ pdf) ─▶ classify as a set ─▶ confirm/correct
-     ─▶ source adapter ─▶ SLA engine ─▶ data quality ─▶ pack
+extracts ─▶ identify by columns ─▶ union open + closed workflows ─▶ extract date from content
+         ─▶ rules per SLA (item outcomes) ─▶ monthly roll-up ─▶ one pack per month ─▶ UI
 ```
 
-**Classification uses content only.** Filenames are never inspected — the sample files are
-deliberately named like real downloads to make that visible. Each source has a structural
-fingerprint in [`config/source-templates.json`](config/source-templates.json): required and
-signature column headers, distinctive vocabulary, document shape, and negative markers that
-argue against a match.
+- **Identified by content.** Each file is recognised from its column headers. Only the
+  first worksheet is read, because BaNCS exports are single-sheet. The expected-results
+  workbook is rejected with a clear message.
+- **One current file per slot.** A set has five slots: EBQ, CANREVEXT, WITHDRAWALEXT,
+  workflow-open and workflow-closed. A newer file for a filled slot replaces the older one.
+  Loading an extract as both `.csv` and `.xlsx` therefore never double-counts.
+- **The extract date comes from the data.** It is an open workflow's Created Date plus its
+  Pending Since Days, which gives 24 September 2026. All 231 open workflows agree.
+- **Every figure is traceable.** The engine keeps an outcome for every item: clock start,
+  deadline, completion and source row. The UI drills from any SLA line down to the records
+  behind it.
+- **Rules calculate; nothing is modelled.** There are no forecasts, amber bands or service
+  credits, because the data defines none of them.
 
-**Files are classified as a set, not one by one.** The five sources are distinct, so an
-upload of five files is an assignment problem. Resolving it jointly rescues ambiguous
-files — a scruffy spreadsheet lands on "Excel tracker" because the BaNCS slot is already
-claimed at high confidence. When set resolution overrides a file's own first choice, the UI
-says so and caps the confidence.
+The code is split like this:
+- [`server/engine/`](server/engine/): the pure SLA engine (calendar, extracts, workflows, rules, roll-up)
+- [`server/pipeline.js`](server/pipeline.js): extract set → packs
+- [`server/quality.js`](server/quality.js): data-quality findings
+- [`server/insights.js`](server/insights.js): failure concentration
+- [`server/intelligence.js`](server/intelligence.js): history view
 
-**The model classifies; rules calculate.** Every SLA figure comes from a deterministic
-adapter in [`server/adapters/`](server/adapters/). No number in the pack is model-generated.
+## Screens
 
-**Reporting month comes from content too.** Every source carries its own period internally,
-so a file filed under the wrong month is flagged rather than silently mis-bucketed.
+- **Dashboard.** Every reporting period grouped by year, showing how many of the 5 service
+  levels met target, the items measured and the overdue open items.
+- **Extracts.** Drop the extract files and see which slots are filled, the derived extract
+  date, and findings about the set itself.
+- **SLA position** (per month). Met, missed, open overdue, both rates, gap to target and
+  pass/fail, with the 23B UL steps nested. Selecting a line lists its items. The view also
+  shows where failures concentrate and the data-quality findings.
+- **SLA exceptions** (per month). The service levels below target, and every failed item
+  (missed or open overdue) with the record it came from.
+- **Governance pack** (per month). A print-ready document; *Export as PDF* uses the
+  browser's PDF engine.
+- **Intelligence** (the panel on the right edge). Monthly trends against target, each
+  service level's pass/fail record, where failures concentrate (handler, product,
+  transaction type), the overdue backlog, an executive narrative, and *Ask about this
+  report*.
 
-**One current pack per month.** `POST /api/generate/:month` re-reads every file uploaded for
-that period and overwrites `data/analyses/<month>.json`. No parallel drafts.
+## Data-quality findings
 
-## The 15 metrics
+The findings are stated next to the figures rather than estimated over. They come from the
+data itself:
+- items open past their deadline
+- withdrawals with no approval workflow, and approval workflows with no withdrawal
+- policies whose earlier approval workflow was superseded
+- REJECTED exclusions
+- EBQ pairs the mapping does not cover
+- the mapping quirks that were normalised
+- an incomplete final month
+- Request-ID precision loss
+- `nan` placeholders
+- any extract that has not been supplied
 
-Defined in [`config/sla-metrics.json`](config/sla-metrics.json) — target, direction,
-absolute amber tolerance, source, service-credit flag. Tolerance is absolute rather than a
-percentage: a 10% band around a 99.5% uptime target would stretch to 89.5%.
+## Narrative and Q&A — and the guards
 
-| Source | Metrics |
+The executive narrative and *Ask about this report* phrase figures that the engine has
+already computed. They never compute figures themselves.
+
+| Layer | When |
 |---|---|
-| BaNCS extract | new business TAT, underwriting TAT, claims TAT, endorsement TAT, STP accuracy |
-| AWS Connect report | speed to answer, abandonment, **FCR — no source column**, handle time, QA |
-| Azure operational report | availability, batch success, refresh timeliness |
-| Excel tracker | complaint resolution TAT |
-| Email feed | escalation resolution time |
+| **Bedrock** (`BEDROCK_MODEL_ID`, default Amazon Nova Pro) | When AWS credentials are available (env, profile or `~/.aws/credentials`) |
+| **Rules** | Otherwise, or whenever the model's text fails a guard |
 
-First Call Resolution has no source anywhere by design. It surfaces as a live data-quality
-gap rather than a fabricated number — the point being that gaps are stated, not estimated.
+Two guards run on every model answer:
+- **Figure guard:** every number in the text must appear in the model's input.
+- **Claims guard:** no service level may be described as meeting or missing target the
+  wrong way round, and a "fails most often" claim must name the right one.
 
-## Synthetic data
+The claims guard exists because a model once described 23C as failing at 96.97% against a
+96% target: a real figure attached to the wrong claim. Narratives are cached on disk by a
+hash of their inputs. Copy `.env.example` to `.env` to configure.
 
-`npm run seed` regenerates all 15 files (3 months × 5 sources) deterministically from
-[`scripts/scenario.js`](scripts/scenario.js), which holds the demo story as data: which
-month lands where on the RAG scale, which file is held back, how much coverage the Azure
-export has. Change a target there and the raw extracts re-solve to match it.
+## Development log
 
-Planted defects the data-quality engine finds: no FCR column, August's Azure export cut 10
-days before period end, a duplicated complaint reference, open cases with blank close dates,
-and hand-typed dates mixed with real date cells in one column.
-
----
-
-# Phase 2 — Operational Intelligence
-
-Phase 1 reports what happened. Phase 2 reads the history Phase 1 produces and says what is
-coming. It does not replace the pipeline — it analyses its output.
-
-Open it from the **Intelligence** control docked to the right edge of any governance screen.
-The panel slides in over the top; the arrow at top-left slides it back out. Deep-linkable at
-`#<month>/<view>/intel`.
-
-## The four capabilities
-
-**Multi-month trend** — any of the 15 SLAs across the full history, with the target line,
-the amber tolerance band and the breach region drawn as shaded areas. The line entering the
-band *is* the finding; you do not have to read a number to see it.
-
-**Breach risk** — a ranked forecast for the month after the history ends. Two explainable
-ingredients: the recent trend slope projected forward, and how far that projection sits from
-the point where the metric formally breaches, measured in that metric's own tolerance units.
-A metric comfortably inside target but falling fast can outrank one already amber but stable.
-Every row shows its reasoning verbatim.
-
-**Recurring failure points** — a driver (branch, queue, service, category) is compared against
-its metric's own average for the same month. Consistently worse across several months means a
-systemic weak spot rather than a bad month, and that distinction is the whole point. Cork and
-Galway surface on underwriting TAT in every period.
-
-**Executive insight** — a narrative that synthesises the three above into something a
-governance lead reads in ten seconds, with an **Ask about this report** box underneath.
-
-## Ask about this report
-
-A Q&A layer over the computed outputs — not a chatbot. Single question, single answer, no
-conversation history, no tools, no retrieval, no knowledge of anything outside the report.
-Ask it about the weather and it says it only covers this report.
-
-Question chips are generated from what this particular report contains, so they always name
-real findings. Typing works too:
-
-> **why is Claims TAT flagged?**
-> Claims processing time is flagged because it has declined in 67% of recent months, is
-> already in breach at 11.1 days, and carries a service-credit consequence. The main drivers
-> are the Waterford and Cork branches, and the Maturity Claim process sub type.
-
-Every figure there was computed before the model saw the question.
-
-**Metric resolution is weighted, not literal.** Plain token matching fails on "Claims TAT" —
-"claims" scores one hit while "TAT" appears in five other metric names. Terms are weighted by
-how many metrics they appear across, so a term unique to one metric ("claims", "uptime") is
-decisive on its own and a shared one ("tat", "time") barely counts. Aliases cover how people
-actually speak in a governance meeting. When nothing resolves confidently it answers
-generally rather than confidently about the wrong metric.
-
-## The fabrication guard
-
-Both the narrative and the assistant run the same check: **every digit-bearing token in the
-output must appear somewhere in the input it was given.** Anything else means a figure was
-invented, and the deterministic version is used instead.
-
-This is not theoretical. During the build the model reported the call-volume forecast as
-landing in the busiest *past* month, and separately called a four-way service-credit exposure
-"the only metric" carrying one. Both were caught, and both were fixed by making the input
-field names impossible to misread rather than by hoping the prompt held.
-
-In a governance pack an invented number is worse than no summary.
-
-## Bedrock, and what happens without it
-
-The narrative has two layers, the same shape as the Phase 1 classifier:
-
-| Layer | When | Notes |
-|---|---|---|
-| **Bedrock** | `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` set | Claude via `AnthropicBedrockMantle`, model from `BEDROCK_MODEL_ID` |
-| **Rules** | otherwise, or on any API failure | Deterministic prose composed from the same computed figures |
-
-Copy `.env.example` to `.env` and fill in the credentials. **The model is given the
-arithmetic and asked to phrase it — it is never asked to work out what the numbers are.**
-Every figure it can quote has already been calculated by the engine, and the system prompt
-forbids stating anything not in its input.
-
-Narratives are **cached on disk** keyed by a hash of the inputs, so a demo never depends on a
-live call and a free-tier key cannot be throttled mid-presentation. Nothing on the page
-breaks if Bedrock is unreachable — it silently falls back and labels which layer produced the
-text.
-
-## The six-month history
-
-`npm run demo` builds April–August 2026; September is the live run. April, May and June are
-Phase 2 backfill, tagged `provenance: "synthetic-backfill"` in the stored analysis (the UI
-does not distinguish them). They are built through the *same* ingestion pipeline as every
-other month, not written as fake JSON.
-
-Four patterns run through the history so the intelligence layer has something real to find:
-
-| Pattern | Where |
-|---|---|
-| Steady decline | complaint and escalation resolution climb every month → the breach prediction |
-| Stable | endorsement TAT, STP accuracy, uptime → proof it is not crying wolf |
-| Seasonal | contact centre load spikes in June and August → demand forecasting |
-| Recurring cause | underwriting delay concentrated in Cork and Galway every month → clustering |
-
-The branch skew is applied so the **monthly headline figure is unchanged** — only its
-distribution across branches shifts. August underwriting TAT is exactly 3.20d either way;
-Cork sits at 4.18d and Dublin at 2.50d underneath it.
-
-## Phase 2 demo beat
-
-Open **August 2026** → governance pack → click **Intelligence** bottom-right. It slides in,
-the badge settles top-centre with its one-line brief, and the panel lands on All History:
-escalation resolution has climbed every month and is projected past target again; Cork and
-Galway are named as the recurring driver in 5 of 5 periods; the executive summary ties it
-together. Narrow to a single month with the scope bar, then arrow back to governance.
-
----
-
-## Not built yet
-
-- **LLM cross-check on classification.** The structural classifier is the safe layer and
-  runs offline. The intended second layer asks Claude the same question and derives the
-  confidence badge from whether the two agree — high when they concur, low 70s when they
-  do not, which is what earns the confirm/correct step its place on screen.
-- **Learned formats.** Corrections are recorded but do not yet update the fingerprints.
-- **Trend and prediction.** Phase 2, teased in the exceptions view.
+[`DEV_LOG.md`](DEV_LOG.md) records the plan, every iteration's changes, the errors hit and how
+they were fixed. [`CLAUDE.md`](CLAUDE.md) holds the working rules and known pitfalls.

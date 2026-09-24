@@ -22,10 +22,10 @@ import { IconSpark, IconAlert, IconCircleCheck } from './Icons.jsx';
  * than no label at all. Unrecognised paragraphs simply go unlabelled.
  */
 const TOPICS = [
-  { label: 'Demand ahead', test: /\bdemand|call volume|forecast volume|volumes?\b/i },
-  { label: 'Where it is concentrated', test: /\bconcentrat|branch|queue|categor|driver|remediat/i },
-  { label: 'Most pressing', test: /\bmost pressing|single|highest risk|priorit/i },
-  { label: 'Outlook', test: /\bat risk|projected|breach|next month|forecast/i },
+  { label: 'Overdue backlog', test: /\bopen past|past (?:their|its) deadline|overdue|backlog/i },
+  { label: 'Where it is concentrated', test: /\bconcentrat|\buser\b|assigned|handler|transaction type|workflow type/i },
+  { label: 'Across the window', test: /\bacross|window|most often|most complete months/i },
+  { label: 'Latest month', test: /\bmet (?:their |its )?target|missed (?:their |its )?target|fell short|latest complete month/i },
 ];
 
 const labelFor = (paragraph) => TOPICS.find((t) => t.test.test(paragraph))?.label ?? null;
@@ -33,14 +33,17 @@ const labelFor = (paragraph) => TOPICS.find((t) => t.test.test(paragraph))?.labe
 /**
  * Lift figures out of the prose without touching the words around them.
  *
- * Years are deliberately excluded — "September 2026" is a date, not a measurement, and
- * boxing the year makes the sentence read like a spreadsheet.
+ * Not figures: years ("September 2026" is a date), the digits inside a service-level code
+ * ("23C", "23B NUL") and step numbers ("Step 2") — boxing those makes the sentence read like
+ * a spreadsheet and suggests measurements that are really names.
  */
 // The word-boundary anchors sit only on the alphabetic units. A trailing \b after "%" can
 // never match — "%" and the following space are both non-word characters — which silently
 // backtracks the unit off the match and leaves "5.9 %" split across the highlight.
-const FIGURE_RE = /\b\d+(?:,\d{3})*(?:\.\d+)?(?:\s?%|\s?days?\b|\s?d\b|\s?s\b|\s?calls\b)?/g;
+const FIGURE_RE = /(?<![A-Za-z0-9.])\d+(?:,\d{3})*(?:\.\d+)?(?:\s?%|\s?days?\b|\s?items?\b)?(?![A-Za-z0-9])/g;
 const isYear = (token) => /^(?:19|20)\d{2}$/.test(token.trim());
+// "24 September 2026" — the day is part of a date, not a figure.
+const DAY_OF_MONTH = /^\s(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
 
 function highlightFigures(text) {
   const parts = [];
@@ -48,6 +51,8 @@ function highlightFigures(text) {
   for (const m of text.matchAll(FIGURE_RE)) {
     const token = m[0];
     if (isYear(token)) continue;
+    if (/Step\s$/i.test(text.slice(Math.max(0, m.index - 5), m.index))) continue;
+    if (DAY_OF_MONTH.test(text.slice(m.index + token.length, m.index + token.length + 12))) continue;
     if (m.index > last) parts.push(text.slice(last, m.index));
     parts.push(<b key={`${m.index}-${token}`} className="fig">{token}</b>);
     last = m.index + token.length;
@@ -58,28 +63,19 @@ function highlightFigures(text) {
 
 /** The headline finding, computed from the data — never parsed out of the narrative. */
 function verdictOf(data) {
-  const creditAtRisk = data.risk.filter((r) => r.projectedBreach && r.serviceCredit);
-  const creditTotal = data.trends.filter((t) => t.serviceCredit).length;
-  const atRisk = data.risk.filter((r) => r.projectedBreach);
-
-  if (creditAtRisk.length) {
+  const month = data.latestFull.label;
+  const failing = data.trends.filter((t) => !t.parent && t.latest?.status === 'FAIL');
+  if (failing.length) {
     return {
       tone: 'severe',
-      headline: `${creditAtRisk.length} of ${creditTotal} service-credit metrics at risk in ${data.horizonLabel}`,
-      detail: creditAtRisk.map((r) => r.name).join(' · '),
-    };
-  }
-  if (atRisk.length) {
-    return {
-      tone: 'warn',
-      headline: `${atRisk.length} metric${atRisk.length === 1 ? '' : 's'} projected to breach in ${data.horizonLabel}`,
-      detail: 'No service-credit exposure forecast for this period.',
+      headline: `${failing.length} of ${data.headline.slaCount} service levels missed target in ${month}`,
+      detail: failing.map((t) => `${t.label} ${(t.latest.rateCompleted * 100).toFixed(2)}% vs ${Math.round(t.target * 100)}%`).join(' · '),
     };
   }
   return {
     tone: 'clear',
-    headline: `No metric projected to breach in ${data.horizonLabel}`,
-    detail: `${data.headline.stable} of 15 service levels holding steady across the window.`,
+    headline: `Every service level with completed items met target in ${month}`,
+    detail: `${data.headline.openPastDeadline.toLocaleString('en-IE')} items open past deadline at the extract date.`,
   };
 }
 
@@ -108,12 +104,14 @@ export default function NarrativeCard({ data, scope }) {
           <div>
             <h2>Executive insight</h2>
             <div className="narrative-scope">
-              {scope === 'all' ? `All history · ${data.headline.monthsAnalysed} periods` : data.focusLabel}
+              {scope === 'all' ? `All history · ${data.headline.monthsAnalysed} periods` : `Up to ${data.focusLabel}`}
             </div>
           </div>
         </div>
         <span className="narrative-source">
-          {narrative.source === 'bedrock' ? narrative.model : 'Computed figures'}
+          {narrative.source === 'bedrock'
+            ? narrative.model
+            : narrative.fallbackReason ? 'Computed figures · model text rejected' : 'Computed figures'}
           {narrative.cached ? ' · cached' : ''}
         </span>
       </header>

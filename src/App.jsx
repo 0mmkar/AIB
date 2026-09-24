@@ -1,41 +1,43 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from './api.js';
 import Dashboard from './views/Dashboard.jsx';
-import Ingest from './views/Ingest.jsx';
-import Consolidated from './views/Consolidated.jsx';
+import Extracts from './views/Extracts.jsx';
+import Position from './views/Position.jsx';
 import Exceptions from './views/Exceptions.jsx';
 import Pack from './views/Pack.jsx';
 import Intelligence from './views/Intelligence.jsx';
 import Rail from './components/Rail.jsx';
-import { IconCloud, IconGrid, IconAlert, IconDoc, IconClock, IconSpark } from './components/Icons.jsx';
+import { IconGrid, IconAlert, IconDoc, IconClock, IconSpark } from './components/Icons.jsx';
 import { fmtStamp } from './lib/format.js';
 
+/** Per-period views, reached from the rail's Actions menu. */
 const VIEWS = [
-  { id: 'ingest', label: 'Ingest & classify', icon: IconCloud, needsPack: false },
-  { id: 'consolidated', label: 'Consolidated data', icon: IconGrid, needsPack: true },
-  { id: 'exceptions', label: 'SLA exceptions', icon: IconAlert, needsPack: true },
-  { id: 'pack', label: 'Governance pack', icon: IconDoc, needsPack: true },
+  { id: 'position', label: 'SLA position', icon: IconGrid },
+  { id: 'exceptions', label: 'SLA exceptions', icon: IconAlert },
+  { id: 'pack', label: 'Governance pack', icon: IconDoc },
 ];
 
-const TITLES = { dashboard: 'Governance dashboard' };
-
 /**
- * A period with a pack already published is not being ingested for the first time — adding
- * evidence to it is a re-ingestion, and the label says so. The screen itself is identical:
- * same drop zone, same classification, same source checklist.
+ * Screens are addressable: "#dashboard", "#extracts", "#2026-08/exceptions", with a
+ * trailing "/intel" opening the intelligence panel over whatever is underneath.
  */
-const viewLabel = (v, hasPack) => (v.id === 'ingest' && hasPack ? 'Initiate re-ingestion' : v.label);
+function parseHash() {
+  const raw = window.location.hash.replace('#', '');
+  const intel = raw === 'intelligence' || raw.endsWith('/intel');
+  const [a, b] = raw.replace(/\/intel$/, '').split('/');
+  if (/^\d{4}-\d{2}$/.test(a)) return { page: 'month', month: a, view: VIEWS.some((v) => v.id === b) ? b : 'position', intel };
+  if (a === 'extracts') return { page: 'extracts', month: null, view: 'position', intel };
+  return { page: 'dashboard', month: null, view: 'position', intel };
+}
 
 export default function App() {
+  const initial = parseHash();
   const [boot, setBoot] = useState(null);
-  const [month, setMonth] = useState(null); // null = dashboard
-  const [uploads, setUploads] = useState([]);
-  const [samples, setSamples] = useState([]);
+  const [page, setPage] = useState(initial.page);
+  const [month, setMonth] = useState(initial.month);
+  const [view, setView] = useState(initial.view);
+  const [intelOpen, setIntelOpen] = useState(initial.intel);
   const [analysis, setAnalysis] = useState(null);
-  const [view, setView] = useState('ingest');
-  const [generating, setGenerating] = useState(false);
-  const [starting, setStarting] = useState(false);
-  const [intelOpen, setIntelOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const [error, setError] = useState(null);
 
@@ -54,113 +56,42 @@ export default function App() {
     loadBoot().catch((e) => setError(e.message));
   }, [loadBoot]);
 
-  // Screens are addressable — "#2026-08/exceptions" — so a demo can be resumed mid-flow
-  // and a specific period's pack can be linked to directly.
   useEffect(() => {
     const apply = () => {
-      const raw = window.location.hash.replace('#', '');
-      // A trailing /intel opens the intelligence panel over whatever is underneath.
-      const wantsIntel = raw === 'intelligence' || raw.endsWith('/intel');
-      setIntelOpen(wantsIntel);
-
-      const [m, v] = raw.replace(/\/intel$/, '').split('/');
-      if (/^\d{4}-\d{2}$/.test(m)) {
-        setMonth(m);
-        if (VIEWS.some((x) => x.id === v)) setView(v);
-      } else if (raw !== 'intelligence') {
-        setMonth(null);
-      }
+      const h = parseHash();
+      setPage(h.page);
+      setMonth(h.month);
+      if (h.page === 'month') setView(h.view);
+      setIntelOpen(h.intel);
     };
-    apply();
     window.addEventListener('hashchange', apply);
     return () => window.removeEventListener('hashchange', apply);
   }, []);
 
   useEffect(() => {
-    const base = month ? `${month}/${view}` : 'dashboard';
-    const want = `#${intelOpen ? (month ? `${base}/intel` : 'intelligence') : base}`;
+    const base = page === 'month' ? `${month}/${view}` : page;
+    const want = `#${intelOpen ? (page === 'month' ? `${base}/intel` : 'intelligence') : base}`;
     if (window.location.hash !== want) window.history.replaceState(null, '', want);
-  }, [month, view, intelOpen]);
-
-  const loadMonth = useCallback(async (key) => {
-    if (!key) return null;
-    const [u, a] = await Promise.all([
-      api.uploads(key).catch(() => ({ uploads: [], samples: [] })),
-      api.analysis(key).catch(() => null),
-    ]);
-    setUploads(u.uploads ?? []);
-    setSamples(u.samples ?? []);
-    setAnalysis(a);
-    return a;
-  }, []);
+  }, [page, month, view, intelOpen]);
 
   useEffect(() => {
-    if (month) loadMonth(month);
-    else { setUploads([]); setSamples([]); setAnalysis(null); }
-  }, [month, loadMonth]);
+    if (page !== 'month' || !month) return setAnalysis(null);
+    let cancelled = false;
+    setAnalysis(null);
+    api.analysis(month)
+      .then((a) => !cancelled && setAnalysis(a))
+      .catch((e) => !cancelled && notify(e.message, true));
+    return () => { cancelled = true; };
+  }, [page, month, notify, boot?.snapshot?.generated_at]);
 
-  const refresh = useCallback(async () => {
-    await loadMonth(month);
-    await loadBoot();
-  }, [month, loadMonth, loadBoot]);
-
-  /** Open a period. Lands on its analysis if one exists, otherwise on ingestion. */
-  const openMonth = useCallback(async (key, preferred = 'consolidated') => {
+  const openMonth = useCallback((key, preferred) => {
+    setPage('month');
     setMonth(key);
-    const a = await loadMonth(key);
-    setView(a ? preferred : 'ingest');
-  }, [loadMonth]);
+    if (preferred) setView(preferred);
+  }, []);
 
-  async function startCurrent() {
-    setStarting(true);
-    try {
-      const { month: key } = await api.createSpace(boot.currentMonth);
-      const b = await loadBoot();
-      setMonth(key);
-      const a = await loadMonth(key);
-      setView(a ? 'consolidated' : 'ingest');
-      if (!b.currentMonthOpen) notify(`Reporting period opened for ${boot.currentMonthLabel}`);
-    } catch (e) {
-      notify(e.message, true);
-    } finally {
-      setStarting(false);
-    }
-  }
-
-  async function generate() {
-    setGenerating(true);
-    try {
-      const a = await api.generate(month);
-      setAnalysis(a);
-      await loadBoot();
-      setView('consolidated');
-      notify(`Governance pack generated for ${a.label}`);
-    } catch (e) {
-      notify(e.message, true);
-    } finally {
-      setGenerating(false);
-    }
-  }
-
-  // A metric names its source as "BaNCS"; the template calls itself "BaNCS extract".
-  // metricSource joins the two vocabularies — both spellings map here.
-  const labelToId = useMemo(() => {
-    const map = {};
-    for (const t of boot?.sourceTemplates ?? []) {
-      map[t.label] = t.id;
-      if (t.metricSource) map[t.metricSource] = t.id;
-    }
-    return map;
-  }, [boot]);
-
-  const sourceIdFor = useCallback((r) => labelToId[r.source] ?? 'unknown', [labelToId]);
-  const metricName = useCallback((id) => boot?.metrics?.find((m) => m.id === id)?.name ?? id, [boot]);
-
-  // A pack generated before the newest upload is out of date, and should say so.
-  const pendingRegen = useMemo(() => {
-    if (!analysis || !uploads.length) return false;
-    return uploads.some((u) => new Date(u.uploadedAt) > new Date(analysis.generated_at));
-  }, [analysis, uploads]);
+  const showDashboard = useCallback(() => { setPage('dashboard'); setMonth(null); }, []);
+  const showExtracts = useCallback(() => { setPage('extracts'); setMonth(null); }, []);
 
   if (error) {
     return (
@@ -173,98 +104,81 @@ export default function App() {
   }
   if (!boot) return <div className="empty" style={{ paddingTop: 140 }}><span className="spinner" /></div>;
 
-  const onDashboard = !month;
+  const snapshot = boot.snapshot;
   const activeMonth = boot.months.find((m) => m.month === month);
-  const hasPack = !!analysis;
   const currentView = VIEWS.find((v) => v.id === view);
+  const title = page === 'dashboard' ? 'Governance dashboard' : page === 'extracts' ? 'BaNCS extracts' : currentView?.label;
 
   return (
     <div className="app">
-      {/* -------------------------------------------------------------- rail */}
       <Rail
         boot={boot}
+        page={page}
         month={month}
         view={view}
         views={VIEWS}
-        uploads={uploads}
         analysis={analysis}
-        hasPack={hasPack}
-        viewLabel={viewLabel}
         onOpenMonth={openMonth}
-        onDashboard={() => setMonth(null)}
+        onDashboard={showDashboard}
+        onExtracts={showExtracts}
         onSelectView={setView}
       />
 
-      {/* -------------------------------------------------------------- main */}
       <main className="main">
         <header className="topbar">
           <div className="topbar-title">
-            <h1>{onDashboard ? TITLES.dashboard : viewLabel(currentView, hasPack)}</h1>
-            {!onDashboard && <span className="topbar-sub">{activeMonth?.label ?? month}</span>}
+            <h1>{title}</h1>
+            {page === 'month' && (
+              <span className="topbar-sub">
+                {activeMonth?.label ?? month}
+                {activeMonth?.partial && ' · incomplete period'}
+              </span>
+            )}
           </div>
-          {onDashboard ? (
-            <div className="stamp">
-              <IconClock />
-              <span>{boot.months.length} reporting period{boot.months.length === 1 ? '' : 's'} on record</span>
-            </div>
-          ) : analysis ? (
-            <div className={`stamp${pendingRegen ? ' is-stale' : ''}`}>
-              <IconClock />
-              {pendingRegen ? (
-                <span>New evidence since last run — <b>regenerate to refresh</b></span>
-              ) : (
-                <span>Last generated <b>{fmtStamp(analysis.generated_at)}</b></span>
-              )}
-            </div>
-          ) : (
-            <div className="stamp"><IconClock /><span>No pack generated for this period</span></div>
-          )}
+          <div className="stamp">
+            <IconClock />
+            {snapshot ? (
+              <span>
+                Extract as of <b>{snapshot.as_of_label}</b> · built {fmtStamp(snapshot.generated_at)}
+              </span>
+            ) : (
+              <span>No extract set loaded</span>
+            )}
+          </div>
         </header>
 
         <div className="page">
-          {onDashboard && (
-            <Dashboard boot={boot} onOpenMonth={openMonth} onStartCurrent={startCurrent} starting={starting} />
-          )}
+          {page === 'dashboard' && <Dashboard boot={boot} onOpenMonth={openMonth} onExtracts={showExtracts} />}
 
-          {!onDashboard && view === 'ingest' && (
-            <Ingest
-              month={month}
-              monthLabel={activeMonth?.label ?? month}
-              templates={boot.sourceTemplates}
-              uploads={uploads}
-              samples={samples}
-              onRefresh={refresh}
-              onGenerate={generate}
-              generating={generating}
-              toast={notify}
-            />
-          )}
-          {!onDashboard && view === 'consolidated' && analysis && (
-            <Consolidated analysis={analysis} sourceIdFor={sourceIdFor} metricName={metricName} />
-          )}
-          {!onDashboard && view === 'exceptions' && analysis && (
-            <Exceptions analysis={analysis} sourceIdFor={sourceIdFor} />
-          )}
-          {!onDashboard && view === 'pack' && analysis && (
-            <Pack analysis={analysis} sourceIdFor={sourceIdFor} metricName={metricName} />
-          )}
+          {page === 'extracts' && <Extracts boot={boot} onChanged={loadBoot} toast={notify} onOpenDashboard={showDashboard} />}
 
-          {!onDashboard && view !== 'ingest' && hasPack && (
+          {page === 'month' && !activeMonth && (
+            <div className="card empty">
+              <div className="empty-icon"><IconAlert size={26} /></div>
+              <h3>No pack for {month}</h3>
+              <p>The loaded extracts contain no measured items for this period.</p>
+            </div>
+          )}
+          {page === 'month' && activeMonth && !analysis && (
+            <div className="empty" style={{ paddingTop: 60 }}><span className="spinner" /></div>
+          )}
+          {page === 'month' && analysis && view === 'position' && <Position analysis={analysis} slas={boot.slas} />}
+          {page === 'month' && analysis && view === 'exceptions' && <Exceptions analysis={analysis} slas={boot.slas} />}
+          {page === 'month' && analysis && view === 'pack' && <Pack analysis={analysis} slas={boot.slas} />}
+
+          {page === 'month' && analysis && (
             <div className="row no-print" style={{ justifyContent: 'space-between', paddingTop: 4 }}>
               <span className="tiny muted">
-                Generated from {analysis.source_files.length} source file
-                {analysis.source_files.length === 1 ? '' : 's'} · every figure calculated by rules, not inferred
+                Built from {analysis.sources.length} BaNCS extract file{analysis.sources.length === 1 ? '' : 's'} as of{' '}
+                {analysis.as_of_label} · every figure calculated by rule from the records, not inferred
               </span>
-              <button className="btn btn-ghost btn-sm" onClick={generate} disabled={generating}>
-                {generating ? <><span className="spinner" /> Regenerating</> : 'Regenerate for this period'}
-              </button>
+              <button className="btn btn-ghost btn-sm" onClick={showExtracts}>Manage extracts</button>
             </div>
           )}
         </div>
       </main>
 
-      {/* Phase 2 entry point — docked to the right edge, always reachable from the
-          governance views, and hidden while the intelligence panel is open. */}
+      {/* Intelligence entry point — docked to the right edge, hidden while the panel is open. */}
       <button
         className={`intel-dock no-print${intelOpen ? ' is-hidden' : ''}`}
         onClick={() => setIntelOpen(true)}
@@ -273,11 +187,11 @@ export default function App() {
         <span className="intel-dock-icon"><IconSpark size={16} /></span>
         <span style={{ textAlign: 'left' }}>
           <span className="intel-dock-label" style={{ display: 'block' }}>Intelligence</span>
-          <span className="intel-dock-sub">Trends · risk · causes</span>
+          <span className="intel-dock-sub">Trends · causes · backlog</span>
         </span>
       </button>
 
-      <Intelligence open={intelOpen} onClose={() => setIntelOpen(false)} />
+      <Intelligence open={intelOpen} onClose={() => setIntelOpen(false)} version={snapshot?.generated_at} />
 
       {toast && <div className={`toast${toast.bad ? ' is-bad' : ''}`}>{toast.message}</div>}
     </div>

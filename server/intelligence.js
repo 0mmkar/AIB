@@ -120,6 +120,7 @@ export function buildIntelligence({ scope = 'all' } = {}) {
     asOf: snapshot?.as_of ?? null,
     asOfLabel: snapshot?.as_of_label ?? null,
     months: window.map((h) => ({ month: h.reporting_month, label: h.label, partial: h.partial })),
+    allMonths: history.map((h) => ({ month: h.reporting_month, label: h.label, partial: h.partial })),
     focusLabel: focus.label,
     focusPartial: focus.partial,
     latestFull: latestFullRef,

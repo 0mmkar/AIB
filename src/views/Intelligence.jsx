@@ -2,25 +2,26 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
 import TrendChart from '../components/TrendChart.jsx';
 import NarrativeCard from '../components/NarrativeCard.jsx';
-import { Rag, CreditTag } from '../components/Chips.jsx';
-import { IconSpark, IconAlert, IconLayers, IconCircleCheck, IconClock } from '../components/Icons.jsx';
-import { fmtValue, fmtTarget } from '../lib/format.js';
+import { Status } from '../components/Chips.jsx';
+import { DriversPanel } from './Position.jsx';
+import { IconSpark, IconAlert, IconLayers, IconClock, IconCircleCheck } from '../components/Icons.jsx';
+import { fmtRate, fmtTarget, fmtCount, fmtDay } from '../lib/format.js';
 
 const BRIEF =
-  'AI-powered trend analysis, breach prediction and root-cause clustering across your full SLA history.';
+  'How each Schedule 23 service level has performed month by month, where its failures sit, and what was still overdue when the extract was taken.';
 
-const scoreStyle = (score) =>
-  score >= 70
-    ? { background: 'var(--red-bg)', color: 'var(--red)' }
-    : score >= 40
-      ? { background: 'var(--papaya)', color: '#c9741a' }
-      : { background: 'var(--violet-050)', color: 'var(--violet-700)' };
+const recordStyle = (t) =>
+  t.failMonths === 0
+    ? { background: 'var(--green-bg)', color: 'var(--green)' }
+    : t.failMonths / Math.max(1, t.observations) >= 0.5
+      ? { background: 'var(--red-bg)', color: 'var(--red)' }
+      : { background: 'var(--papaya)', color: '#c9741a' };
 
-export default function Intelligence({ open, onClose }) {
+export default function Intelligence({ open, onClose, version }) {
   const [scope, setScope] = useState('all');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [metricId, setMetricId] = useState(null);
+  const [slaId, setSlaId] = useState(null);
   const [error, setError] = useState(null);
   // Increments on each open, so the header animation replays without unmounting on close.
   const [openCount, setOpenCount] = useState(0);
@@ -38,13 +39,14 @@ export default function Intelligence({ open, onClose }) {
       .then((d) => {
         if (cancelled) return;
         setData(d);
-        // Default the chart to whatever the risk panel considers most urgent.
-        setMetricId((cur) => (cur && d.trends.some((t) => t.id === cur) ? cur : d.risk?.[0]?.id ?? d.trends?.[0]?.id ?? null));
+        // Default the chart to the service level that missed target most often.
+        const worst = [...(d.trends ?? [])].filter((t) => !t.parent).sort((a, b) => b.failMonths - a.failMonths)[0];
+        setSlaId((cur) => (cur && d.trends.some((t) => t.id === cur) ? cur : worst?.id ?? d.trends?.[0]?.id ?? null));
       })
       .catch((e) => !cancelled && setError(e.message))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
-  }, [open, scope]);
+  }, [open, scope, version]);
 
   // Escape closes the panel — expected of anything that behaves like a drawer.
   useEffect(() => {
@@ -54,7 +56,8 @@ export default function Intelligence({ open, onClose }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const trend = useMemo(() => data?.trends.find((t) => t.id === metricId) ?? null, [data, metricId]);
+  const trend = useMemo(() => data?.trends?.find((t) => t.id === slaId) ?? null, [data, slaId]);
+  const allMonths = data?.allMonths ?? data?.months ?? [];
 
   return (
     <>
@@ -69,9 +72,8 @@ export default function Intelligence({ open, onClose }) {
             Governance
           </button>
 
-          {/* Keyed on the open count rather than gated on `open`: remounting replays the
-              entrance each time the panel is opened, while leaving the header on screen
-              through the slide-out instead of blinking away before the panel has moved. */}
+          {/* Keyed on the open count: remounting replays the entrance on every open while the
+              header stays on screen through the slide-out. */}
           <div className="intel-badge" key={`badge-${openCount}`}>
             <IconSpark size={17} />
             <span className="intel-badge-title">Operational Intelligence</span>
@@ -80,19 +82,23 @@ export default function Intelligence({ open, onClose }) {
         </header>
 
         <div className="intel-body">
-          {/* -------------------------------------------------- scope toggle */}
+          {/* -------------------------------------------------- scope */}
           {data && !data.empty && (
             <div className="scope-bar">
               <button className={`scope-chip${scope === 'all' ? ' is-active' : ''}`} onClick={() => setScope('all')}>
                 All history
               </button>
-              {data.months.map((m) => (
-                <button key={m.month}
-                        className={`scope-chip${scope === m.month ? ' is-active' : ''}`}
-                        onClick={() => setScope(m.month)}>
-                  {m.label.replace(' 20', " '")}
-                </button>
-              ))}
+              <select
+                className="metric-select"
+                value={scope === 'all' ? '' : scope}
+                onChange={(e) => setScope(e.target.value || 'all')}
+                aria-label="Read the history up to a month"
+              >
+                <option value="">Up to a month…</option>
+                {[...allMonths].reverse().map((m) => (
+                  <option key={m.month} value={m.month}>Up to {m.label}{m.partial ? ' (incomplete)' : ''}</option>
+                ))}
+              </select>
             </div>
           )}
 
@@ -109,7 +115,7 @@ export default function Intelligence({ open, onClose }) {
             <div className="card empty">
               <div className="empty-icon"><IconLayers size={26} /></div>
               <h3>No history to analyse yet</h3>
-              <p>Generate at least two monthly governance packs and the trend, risk and pattern panels will populate.</p>
+              <p>Load the BaNCS extract set and the trend, driver and backlog panels will populate.</p>
             </div>
           )}
 
@@ -118,10 +124,14 @@ export default function Intelligence({ open, onClose }) {
               {/* ------------------------------------------------- headline */}
               <div className="stat-row">
                 <Stat label="Periods analysed" value={data.headline.monthsAnalysed} note={`${data.months[0].label} to ${data.focusLabel}`} accent="violet" />
-                <Stat label={`Projected to breach in ${data.horizonLabel}`} value={data.headline.atRiskNextMonth}
-                      note={`${data.headline.newlyAtRisk} not breaching today`} accent="red" />
-                <Stat label="Deteriorating" value={data.headline.deteriorating} note={`${data.headline.stable} holding steady`} accent="amber" />
-                <Stat label="Recurring causes" value={data.headline.recurringCauses} note="consistent across months" accent="violet" />
+                <Stat
+                  label={`Missed target · ${data.latestFull.label}`}
+                  value={`${data.headline.failingLatest} / ${data.headline.slaCount}`}
+                  note={data.headline.failingLatestIds.length ? data.headline.failingLatestIds.map((id) => data.trends.find((t) => t.id === id)?.label).join(', ') : 'every service level met target'}
+                  accent="red"
+                />
+                <Stat label="Months below target" value={data.headline.failMonths} note={`of ${data.headline.scoredMonths} service-level months scored`} accent="amber" />
+                <Stat label="Open past deadline" value={fmtCount(data.headline.openPastDeadline)} note={`at the extract date, ${data.asOfLabel}`} accent="amber" />
               </div>
 
               {/* ------------------------------------------------ narrative */}
@@ -133,52 +143,52 @@ export default function Intelligence({ open, onClose }) {
                   <div className="card-head">
                     <div className="trend-head" style={{ width: '100%' }}>
                       <div>
-                        <h2>Multi-month trend</h2>
+                        <h2>Monthly trend</h2>
                         <div className="sub">
                           {trend
-                            ? `${trend.direction_label} · ${trend.observations} periods · target ${fmtTarget(trend)}`
-                            : 'Select a metric'}
+                            ? `${trend.label} · target ${fmtTarget(trend.target)} · ${fmtRate(trend.window.rateCompleted)} across the window`
+                            : 'Select a service level'}
                         </div>
                       </div>
-                      <select className="metric-select" value={metricId ?? ''} onChange={(e) => setMetricId(e.target.value)}>
-                        {data.trends.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      <select className="metric-select" value={slaId ?? ''} onChange={(e) => setSlaId(e.target.value)}>
+                        {data.trends.map((t) => <option key={t.id} value={t.id}>{t.parent ? '  ↳ ' : ''}{t.label} · {t.name}</option>)}
                       </select>
                     </div>
                   </div>
                   <div className="chart-wrap">
-                    {trend ? <TrendChart trend={trend} /> : <p className="tiny muted">No metric selected.</p>}
+                    {trend ? <TrendChart trend={trend} /> : <p className="tiny muted">No service level selected.</p>}
                   </div>
                 </div>
 
-                {/* ----------------------------------------------- risk */}
+                {/* ----------------------------------------------- record */}
                 <div className="card">
                   <div className="card-head">
                     <div>
-                      <h2>Breach risk · {data.horizonLabel}</h2>
-                      <div className="sub">Ranked by trend slope and distance to threshold</div>
+                      <h2>Service level record</h2>
+                      <div className="sub">Complete months below target, and the result across the whole window</div>
                     </div>
                   </div>
                   <div className="card-pad">
-                    {data.risk.slice(0, 6).map((r) => (
-                      <div key={r.id} className={`risk-row${r.serviceCredit && r.projectedBreach ? ' is-credit' : ''}`}
-                           onClick={() => setMetricId(r.id)} style={{ cursor: 'pointer' }}>
-                        <div className="risk-score" style={scoreStyle(r.score)}>{r.score}</div>
+                    {data.trends.filter((t) => !t.parent).map((t) => (
+                      <div key={t.id} className="risk-row" onClick={() => setSlaId(t.id)} style={{ cursor: 'pointer' }}>
+                        <div className="risk-score" style={recordStyle(t)} title="Complete months below target">{t.failMonths}</div>
                         <div>
-                          <div className="row" style={{ gap: 7 }}>
-                            <span className="risk-name">{r.name}</span>
-                            {r.serviceCredit && r.projectedBreach && <CreditTag />}
+                          <span className="risk-name">{t.label} · {t.name}</span>
+                          <div className="risk-why">
+                            Missed in {t.failMonths} of {t.observations} complete months
+                            {t.failStreak > 1 ? ` · the last ${t.failStreak} in a row` : ''}
+                            {t.worst ? ` · weakest ${t.worst.label} at ${fmtRate(t.worst.rateCompleted)} (${fmtCount(t.worst.met + t.worst.missed)} completed item${t.worst.met + t.worst.missed === 1 ? '' : 's'})` : ''}
                           </div>
-                          <div className="risk-why">{r.reasons.join(' · ')}</div>
+                          <div className="months-strip" title="Complete months: red = below target">
+                            {t.points.filter((p) => !p.partial && p.status !== 'NO_DATA').map((p) => (
+                              <i key={p.month} className={p.status === 'FAIL' ? 'hit' : ''} title={`${p.label}: ${fmtRate(p.rateCompleted)}`} />
+                            ))}
+                          </div>
                         </div>
                         <div className="risk-figures">
-                          <div className="risk-projection">
-                            {fmtValue(r.current, r.unit)}
-                            <span className="risk-arrow">→</span>
-                            <span style={{ color: r.projectedBreach ? 'var(--red)' : 'var(--ink)' }}>
-                              {fmtValue(r.projected, r.unit)}
-                            </span>
-                          </div>
-                          <div style={{ marginTop: 5 }}><Rag status={r.projectedRag} /></div>
+                          <div className="risk-projection">{fmtRate(t.window.rateCompleted)}</div>
+                          <div className="tiny muted" style={{ marginTop: 3 }}>window vs {fmtRate(t.target, 0)}</div>
+                          <div style={{ marginTop: 5 }} title="Across the whole window"><Status status={t.window.status} compact /></div>
                         </div>
                       </div>
                     ))}
@@ -186,76 +196,53 @@ export default function Intelligence({ open, onClose }) {
                 </div>
               </div>
 
-              {/* ------------------------------------------- root causes */}
+              {/* ------------------------------------------- drivers */}
               <div className="card">
                 <div className="card-head">
                   <div>
-                    <h2>Recurring failure points</h2>
+                    <h2>Where failures concentrate</h2>
                     <div className="sub">
-                      Drivers consistently worse than their metric's own average — a systemic weak spot, not a bad month
+                      Handlers, products and transaction types failing at 1.25× their service level’s rate or more across the window
                     </div>
                   </div>
-                  <span className="tag warm">{data.clusters.length} found</span>
+                  <span className="tag warm">{data.drivers.length} found</span>
                 </div>
-                <div className="card-pad">
-                  {data.clusters.length === 0 ? (
-                    <div className="row" style={{ gap: 10, color: 'var(--green)' }}>
-                      <IconCircleCheck size={18} />
-                      <span className="tiny" style={{ color: 'var(--ink-2)' }}>
-                        No driver is consistently worse than its metric average across the window.
-                      </span>
-                    </div>
-                  ) : (
-                    data.clusters.slice(0, 6).map((c) => (
-                      <div key={`${c.metricId}-${c.dimension}-${c.key}`} className="cluster-row">
-                        <div>
-                          <div className="row" style={{ gap: 8 }}>
-                            <span className="cluster-driver">{c.key}</span>
-                            <span className="tag muted">{c.dimension}</span>
-                            {c.serviceCredit && <CreditTag />}
-                          </div>
-                          <div className="cluster-meta">
-                            {c.metricName} · {c.records.toLocaleString()} records across {c.monthsPresent} periods
-                          </div>
-                          <div className="months-strip" title={`Worse than average in ${c.monthsWorse} of ${c.monthsPresent} periods`}>
-                            {c.months.map((m) => (
-                              <i key={m.month} className={m.deltaPct > 5 ? 'hit' : ''} />
-                            ))}
-                          </div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div className="cluster-delta">+{c.avgDeltaPct}%</div>
-                          <div className="cluster-persist">worse than average</div>
-                          <div className="cluster-persist">{c.monthsWorse} of {c.monthsPresent} periods</div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+                <div className="card-pad"><DriversPanel drivers={data.drivers} slas={data.trends} limit={8} /></div>
               </div>
 
-              {/* ----------------------------------------------- demand */}
+              {/* ----------------------------------------------- backlog */}
               <div className="card">
                 <div className="card-head">
                   <div>
-                    <h2>Demand forecast · {data.horizonLabel}</h2>
-                    <div className="sub">Projected volume from the observed trend, for capacity planning</div>
+                    <h2>Overdue backlog · {data.asOfLabel}</h2>
+                    <div className="sub">Items still open past their deadline when the extract was taken — outside the pass/fail rate, each a miss in waiting</div>
                   </div>
                 </div>
                 <div className="card-pad">
-                  <div className="demand-row">
-                    <Demand label="Calls offered" d={data.demand.calls} />
-                    <Demand label="Complaints logged" d={data.demand.complaints} />
-                    <Demand label="Escalations raised" d={data.demand.escalations} />
-                  </div>
+                  {data.backlog.length === 0 ? (
+                    <div className="row" style={{ gap: 10, color: 'var(--green)' }}>
+                      <IconCircleCheck size={18} />
+                      <span className="tiny" style={{ color: 'var(--ink-2)' }}>Nothing open past its deadline.</span>
+                    </div>
+                  ) : (
+                    <div className="demand-row">
+                      {data.backlog.map((b) => (
+                        <div key={b.id} className="demand-card">
+                          <div className="demand-label">{b.label}</div>
+                          <div className="demand-value">{fmtCount(b.count)}</div>
+                          <div className="demand-change up">oldest due {fmtDay(b.oldestDeadline)}</div>
+                          <div className="demand-note">{b.daysOverdue} days overdue · {b.name}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="row" style={{ justifyContent: 'center', paddingTop: 4 }}>
                 <span className="tiny muted row" style={{ gap: 7 }}>
                   <IconClock />
-                  Trend, risk and clustering computed from {data.headline.monthsAnalysed} stored governance packs ·
-                  every figure derived by rule, not inferred
+                  Computed from {data.headline.monthsAnalysed} monthly packs · {fmtCount(data.headline.measured)} items measured · every figure derived by rule, nothing projected
                 </span>
               </div>
             </>
@@ -272,21 +259,6 @@ function Stat({ label, value, note, accent }) {
       <div className="stat-label">{label}</div>
       <div className="stat-value">{value}</div>
       <div className="stat-note">{note}</div>
-    </div>
-  );
-}
-
-function Demand({ label, d }) {
-  if (!d) return null;
-  const up = d.changePct > 0;
-  return (
-    <div className="demand-card">
-      <div className="demand-label">{label}</div>
-      <div className="demand-value">{d.projected.toLocaleString()}</div>
-      <div className={`demand-change ${up ? 'up' : 'down'}`}>
-        {up ? '▲' : '▼'} {Math.abs(d.changePct)}% vs {d.current.toLocaleString()}
-      </div>
-      <div className="demand-note">Peak so far: {d.peakMonth}</div>
     </div>
   );
 }

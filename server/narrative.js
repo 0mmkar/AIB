@@ -104,7 +104,9 @@ export function slaFacts(t) {
     completeMonthsScored: t.observations,
     completeMonthsFailed: t.failMonths,
     consecutiveCompleteMonthsFailingUpToLatest: t.failStreak,
-    worstCompleteMonth: t.worst ? { month: t.worst.label, rateCompleted: pct(t.worst.rateCompleted) } : null,
+    worstCompleteMonth: t.worst
+      ? { month: t.worst.label, rateCompleted: pct(t.worst.rateCompleted), completedItemsThatMonth: t.worst.met + t.worst.missed }
+      : null,
   };
 }
 

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Logo from './Logo.jsx';
-import { IconLayers, IconSearch, IconBolt, IconChevron, IconCircleCheck } from './Icons.jsx';
-import { relativeTime } from '../lib/format.js';
+import { IconLayers, IconSearch, IconBolt, IconChevron, IconCircleCheck, IconCloud } from './Icons.jsx';
 
 /**
  * Left navigation.
@@ -39,7 +38,7 @@ const matches = (m, query) => {
 };
 
 export default function Rail({
-  boot, month, view, views, uploads, analysis, hasPack, viewLabel, onOpenMonth, onDashboard, onSelectView,
+  boot, page, month, view, views, analysis, onOpenMonth, onDashboard, onExtracts, onSelectView,
 }) {
   const [query, setQuery] = useState('');
   const [actionsOpen, setActionsOpen] = useState(false);
@@ -103,9 +102,13 @@ export default function Rail({
         </div>
 
         <nav className="nav">
-          <button className={`nav-item${!month ? ' is-active' : ''}`} onClick={onDashboard}>
+          <button className={`nav-item${page === 'dashboard' ? ' is-active' : ''}`} onClick={onDashboard}>
             <IconLayers size={17} /> Dashboard
             {boot.months.length > 0 && <span className="nav-count">{boot.months.length}</span>}
+          </button>
+          <button className={`nav-item${page === 'extracts' ? ' is-active' : ''}`} onClick={onExtracts}>
+            <IconCloud size={17} /> Extracts
+            {boot.snapshot && <span className="nav-count">{boot.snapshot.sourceCount}</span>}
           </button>
         </nav>
 
@@ -154,7 +157,7 @@ export default function Rail({
               <span className="actions-icon"><IconBolt size={15} /></span>
               <span className="actions-text">
                 <span className="actions-title">Actions</span>
-                <span className="actions-current">{currentView ? viewLabel(currentView, hasPack) : 'Choose a view'}</span>
+                <span className="actions-current">{currentView ? currentView.label : 'Choose a view'}</span>
               </span>
               <span className="actions-chevron"><IconChevron /></span>
             </button>
@@ -162,8 +165,8 @@ export default function Rail({
         )}
 
         <div className="rail-foot">
-          Phase 1 · 2 prototype · synthetic data
-          <span className="rail-foot-more"><br />Source type identified from document structure, never from filename.</span>
+          Schedule 23 · TCS BaNCS extracts{boot.snapshot ? ` · as of ${boot.snapshot.as_of_label}` : ''}
+          <span className="rail-foot-more"><br />Every figure calculated by rule from the extract records.</span>
         </div>
       </aside>
 
@@ -172,26 +175,20 @@ export default function Rail({
           <div className="actions-pop-head">{activeMonth?.label ?? month}</div>
           {views.map((v, i) => {
             const Icon = v.icon;
-            const disabled = v.needsPack && !hasPack;
             const active = v.id === view;
-            const count =
-              v.id === 'ingest' ? uploads.length
-                : v.id === 'exceptions' ? analysis?.summary?.breaches ?? 0
-                  : 0;
+            const count = v.id === 'exceptions' ? analysis?.summary?.fail ?? 0 : 0;
             return (
               <button
                 key={v.id}
                 // Drives the stagger — each item waits its turn before fading in.
                 style={{ '--i': i }}
                 className={`actions-item${active ? ' is-active' : ''}`}
-                disabled={disabled}
                 role="menuitem"
                 onClick={() => { onSelectView(v.id); setActionsOpen(false); }}
               >
                 <span className="actions-item-icon"><Icon size={16} /></span>
                 <span className="actions-item-body">
-                  <span className="actions-item-label">{viewLabel(v, hasPack)}</span>
-                  {disabled && <span className="actions-item-note">Generate a pack first</span>}
+                  <span className="actions-item-label">{v.label}</span>
                 </span>
                 {count > 0 && <span className="actions-item-count">{count}</span>}
                 {active && <span className="actions-item-tick"><IconCircleCheck size={15} /></span>}
@@ -208,10 +205,9 @@ function PeriodCard({ m, active, onOpen }) {
   const s = m.summary;
   const segments = s
     ? [
-        { n: s.GREEN, c: 'var(--green)' },
-        { n: s.AMBER, c: '#e59a3c' },
-        { n: s.RED, c: 'var(--red)' },
-        { n: s.NO_DATA, c: 'rgba(255,255,255,0.28)' },
+        { n: s.pass, c: 'var(--green)' },
+        { n: s.fail, c: 'var(--red)' },
+        { n: s.noData, c: 'rgba(255,255,255,0.28)' },
       ].filter((x) => x.n > 0)
     : [];
 
@@ -219,14 +215,11 @@ function PeriodCard({ m, active, onOpen }) {
     <button className={`month-card${active ? ' is-active' : ''}`} onClick={onOpen}>
       <div className="month-card-top">
         <span className="month-card-name">{m.label}</span>
-        {s?.serviceCreditBreaches > 0 && <span className="month-credit">{s.serviceCreditBreaches}</span>}
+        {s?.fail > 0 && <span className="month-credit" title={`${s.fail} service levels missed target`}>{s.fail}</span>}
       </div>
       <div className="month-card-meta">
-        {m.generatedAt
-          ? `${s.breaches} breach${s.breaches === 1 ? '' : 'es'} · ${relativeTime(m.generatedAt)}`
-          : m.uploadCount
-            ? `${m.uploadCount} file${m.uploadCount === 1 ? '' : 's'} staged`
-            : 'open · no files yet'}
+        {!s ? 'no pack' : s.fail ? `${s.fail} of ${s.total} missed target` : `${s.pass} of ${s.total} met target`}
+        {m.partial && ' · incomplete'}
       </div>
       {segments.length > 0 && (
         <div className="month-bar">

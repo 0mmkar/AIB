@@ -42,21 +42,20 @@ add a correction in the new entry.
 
 ## Current status
 
-_Last updated: 2026-09-24 · Iteration 2_
+_Last updated: 2026-09-24 · Iteration 3_
 
 - **Direction:** all demo logic is discarded. Everything follows `Claude_Data/` only. The UI
   keeps its visual design. Decisions D1–D7 are in DEV_LOG.md §3.
 - **Branch:** work happens on `feature/real-bancs-data`. **Never commit to `main`.**
-  `Claude_Data/` is committed on this branch (the user's decision).
-- **Done:**
-  - The engine reproduces `SLA_Expected_Results.xlsx` exactly (`npm run verify:real`
-    gives 0 diffs).
-  - The backend serves the real data: 22 monthly packs, findings, drivers, and a
-    data-only intelligence layer with a guarded Bedrock narrative and Q&A.
-  - The demo code, the seed data and the PDF dependencies are deleted.
-  - `npm test` passes 12/12.
-- **Not yet wired:** the React UI still calls the old API shape. Iteration 3 moves every
-  view (and the Intelligence panel) onto the new API while keeping the design.
+  `Claude_Data/` is committed on this branch.
+- **Done (plan phases A–E complete):**
+  - The engine reproduces `SLA_Expected_Results.xlsx` exactly (0 diffs, csv and xlsx).
+  - The backend builds 22 monthly packs from the extract set, auto-loaded on a cold start.
+  - Every screen runs on the real data with the original design: Dashboard, Extracts, SLA
+    position, Exceptions, Governance pack, and Intelligence (including the guarded Bedrock
+    narrative and Q&A).
+  - README rewritten. `npm test` passes 24/24.
+- **Open:** user review. Merging or opening a PR is the user's decision.
 
 ---
 
@@ -92,7 +91,7 @@ Claude_Data/*.csv|xlsx ─▶ engine/extracts (identify by columns) ─▶ engin
 | Storage (`data/extracts`, `data/analyses`, `data/snapshot.json`) | [server/store.js](server/store.js) |
 | Intelligence / narrative / Q&A | [server/intelligence.js](server/intelligence.js), [server/narrative.js](server/narrative.js), [server/assistant.js](server/assistant.js) |
 | API routes | [server/index.js](server/index.js) |
-| UI (design kept) | [src/App.jsx](src/App.jsx), [src/views/](src/views/), [src/components/](src/components/), [src/styles.css](src/styles.css) |
+| UI (design kept) | [src/App.jsx](src/App.jsx) (routing), [src/views/](src/views/) (Dashboard, Extracts, Position, Exceptions, Pack, Intelligence), [src/components/](src/components/), [src/styles.css](src/styles.css) |
 | Acceptance harness | [scripts/verify-real.js](scripts/verify-real.js) |
 
 ## Project rules
@@ -160,11 +159,26 @@ Add to this list whenever something bites.
 - Each extract ships as both .csv and .xlsx. Never load both, or every record counts twice.
   The slot model enforces this.
 
+- Identify extracts from the **first worksheet only**. The expected-results workbook's
+  '23B UL Step 2' tab carries every WITHDRAWALEXT column, and it once replaced the real
+  extract. It is now rejected explicitly.
+- Charts: a month with one or two completed items can sit at 0%. Clip such values at the
+  axis with a label rather than letting them set the scale.
+
+**UI conventions**
+- Reuse the design system's classes and tokens (`card`, `stat`, `table`, `rag-*`,
+  `scope-chip`, `cluster-row`, ...). Add CSS only in the small "SLA table and item lists"
+  block.
+- Check layout with headless Edge screenshots at 1440 px:
+  `msedge --headless=new --window-size=1440,1800 --virtual-time-budget=9000 --screenshot=out.png http://localhost:5174/#2026-08/position`
+
 **Environment (Windows)**
 - Stop the server before `npm run data:load` / `reset`, because open handles block deletes.
 - Tracked text files have **CRLF** line endings in the working copy (autocrlf). A
   `
 `-anchored regex edit silently matches nothing, so use the Edit tool or normalise first.
+- Do not pass regex-bearing code through bash heredocs into JS template strings, because
+  the escapes get mangled. Use the Edit tool.
 - Python prints to a cp1252 console, so set `PYTHONIOENCODING=utf-8` when printing
   workbook text.
 - There is no pandas or openpyxl. Use `exceljs` via Node (`npm install` has now been run).

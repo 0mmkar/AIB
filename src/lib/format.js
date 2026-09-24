@@ -1,38 +1,43 @@
-export function fmtValue(value, unit) {
-  if (value == null) return '—';
-  const dp = unit === '%' ? 2 : unit === 'seconds' ? 0 : 1;
-  const n = Number(value).toFixed(dp);
-  if (unit === '%') return `${n}%`;
-  if (unit === 'seconds') return `${n}s`;
-  if (unit === 'days') return `${n}d`;
-  return n;
-}
-
-export const fmtTarget = (m) => `${m.direction === 'lower_is_better' ? '≤' : '≥'} ${fmtValue(m.target, m.unit)}`;
-
-/** Tolerances are small and exact — rounding 0.25d to "0.3d" misstates the contract. */
-export function fmtTolerance(metric) {
-  const v = metric.amberTolerance;
+/** A rate held as a 0..1 fraction, shown the way the SLA workbook shows it: 97.28%. */
+export function fmtRate(v, dp = 2) {
   if (v == null) return '—';
-  const n = Number(v).toString();
-  return metric.unit === '%' ? `${n}%` : metric.unit === 'seconds' ? `${n}s` : metric.unit === 'days' ? `${n}d` : n;
+  return `${(v * 100).toFixed(dp)}%`;
 }
 
-export function fmtVariance(metric, variance) {
-  if (variance == null) return '—';
-  const sign = variance >= 0 ? '+' : '−';
-  return `${sign}${fmtValue(Math.abs(variance), metric.unit)}`;
+/** Target as a threshold: "≥ 97%". Targets are whole percentages in the schedule. */
+export const fmtTarget = (target) => `≥ ${fmtRate(target, target * 100 % 1 ? 1 : 0)}`;
+
+/** Distance from target in percentage points, signed: "+1.28 pp" / "−0.39 pp". */
+export function fmtGap(rate, target) {
+  if (rate == null) return '—';
+  const pp = (rate - target) * 100;
+  const sign = pp >= 0 ? '+' : '−';
+  return `${sign}${Math.abs(pp).toFixed(2)} pp`;
 }
 
-// Structural evidence is matched in normalised lowercase; show it the way the column or
-// term actually reads in the source document.
-const ACRONYMS = new Set(['tat', 'qa', 'asa', 'aht', 'fcr', 'arn', 'aws', 'stp', 'uw', 'sla', 'fspo', 'id']);
+export const fmtCount = (n) => (n == null ? '—' : Number(n).toLocaleString('en-IE'));
 
-export function fmtEvidence(token) {
-  return String(token)
-    .split(' ')
-    .map((w) => (ACRONYMS.has(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
-    .join(' ');
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** '2026-08-13' → '13 Aug 2026'; '2026-08-13T09:38:09' → '13 Aug 2026 09:38'. */
+export function fmtDay(iso) {
+  if (!iso) return '—';
+  const [d, t] = String(iso).split('T');
+  const [y, m, day] = d.split('-').map(Number);
+  const out = `${day} ${MONTHS[m - 1]} ${y}`;
+  return t ? `${out} ${t.slice(0, 5)}` : out;
+}
+
+export const fmtMonthShort = (monthKey) => {
+  const [y, m] = monthKey.split('-').map(Number);
+  return `${MONTHS[m - 1]} ${String(y).slice(2)}`;
+};
+
+export function fmtHours(h) {
+  if (h == null) return '—';
+  const whole = Math.floor(h);
+  const mins = Math.round((h - whole) * 60);
+  return `${whole}h ${String(mins).padStart(2, '0')}m`;
 }
 
 export function fmtBytes(n) {
@@ -59,10 +64,13 @@ export function relativeTime(iso) {
   return `${Math.round(secs / 86400)} d ago`;
 }
 
-/** How far along the target→breach axis a value sits, for the inline bars. 0..1 */
-export function progressOf(metric, actual) {
-  if (actual == null) return 0;
-  const span = Math.max(metric.amberTolerance * 4, Math.abs(metric.target) * 0.1);
-  const delta = metric.direction === 'lower_is_better' ? actual - metric.target : metric.target - actual;
-  return Math.max(0, Math.min(1, 0.5 + delta / (span * 2)));
+/**
+ * Where a rate sits on the inline bar: the target mark is fixed at the centre, and the bar
+ * spans five percentage points either side, so a 1 pp miss is visibly short of the mark.
+ */
+export function progressOf(rate, target) {
+  if (rate == null) return 0;
+  return Math.max(0, Math.min(1, 0.5 + (rate - target) * 10));
 }
+
+export const plural = (n, one, many = `${one}s`) => `${fmtCount(n)} ${n === 1 ? one : many}`;
