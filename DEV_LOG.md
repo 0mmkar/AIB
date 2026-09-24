@@ -449,6 +449,8 @@ The plan was rewritten (§3) and §2.5 marked superseded, because the demo pipel
 | E3.5 | Tables overflowed the card at 1440 px: status chips wrapped, the outcome column was clipped | Too many columns and long labels | SLA name moved to a sub-line. Chips no longer wrap. Clock start → deadline share one cell. "Taken" folded into Completed. Outcome chips use short labels with the workbook term as tooltip. |
 | E3.6 | **`SLA_Expected_Results.xlsx` was accepted as a WITHDRAWALEXT** and replaced the real one (found by the upload test) | The reader searched every sheet, and the workbook's '23B UL Step 2' tab carries every WITHDRAWALEXT column | Read only the first worksheet (BaNCS exports are single-sheet). Reject the workbook by its tabs. Regression tests cover every extract in both formats and the workbook. |
 
+Note (branch): `git reflog` shows `checkout: moving from feature/real-bancs-data to Ommkar` at 15:00:38, just after the Iteration 1 commit. It did not come from Claude's commands. The Iteration 2 and 3 commits therefore landed on **`Ommkar`**, which now holds the whole initiative. `feature/real-bancs-data` stops at Iteration 1. `main` is untouched at `fcb17ec`. The branches were left as they are.
+
 Note: the "exit code 127" notices for background servers were the servers stopped deliberately for restarts. They are not failures.
 
 **Verification**

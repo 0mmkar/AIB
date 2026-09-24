@@ -46,8 +46,9 @@ _Last updated: 2026-09-24 · Iteration 3_
 
 - **Direction:** all demo logic is discarded. Everything follows `Claude_Data/` only. The UI
   keeps its visual design. Decisions D1–D7 are in DEV_LOG.md §3.
-- **Branch:** work happens on `feature/real-bancs-data`. **Never commit to `main`.**
-  `Claude_Data/` is committed on this branch.
+- **Branch:** the working branch is **`Ommkar`**. HEAD was switched to it at 15:00:38 on
+  2026-09-24, outside Claude's commands. It holds every commit of this initiative.
+  `feature/real-bancs-data` stops at Iteration 1. **Never commit to `main`.**
 - **Done (plan phases A–E complete):**
   - The engine reproduces `SLA_Expected_Results.xlsx` exactly (0 diffs, csv and xlsx).
   - The backend builds 22 monthly packs from the extract set, auto-loaded on a cold start.
@@ -149,8 +150,9 @@ Add to this list whenever something bites.
   `row.getCell(n)`.
 
 **Project rules for git**
-- The user does **not** want changes on `main`. Work and commit on
-  `feature/real-bancs-data`, or another feature branch.
+- The user does **not** want changes on `main`. Commit on the current feature branch
+  (`Ommkar`). Run `git branch --show-current` before every commit, and never switch
+  branches without being asked.
 
 - A pass/fail figure can be real and still stated backwards. The Bedrock narrative once said
   23C failed at 96.97% (target 96%). Keep met/missed as explicit lists in any model brief.
