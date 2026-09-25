@@ -42,7 +42,7 @@ add a correction in the new entry.
 
 ## Current status
 
-_Last updated: 2026-09-24 · Iteration 3_
+_Last updated: 2026-09-25 · Iteration 4_
 
 - **Direction:** all demo logic is discarded. Everything follows `Claude_Data/` only. The UI
   keeps its visual design. Decisions D1–D7 are in DEV_LOG.md §3.
@@ -56,7 +56,14 @@ _Last updated: 2026-09-24 · Iteration 3_
     position, Exceptions, Governance pack, and Intelligence (including the guarded Bedrock
     narrative and Q&A).
   - README rewritten. `npm test` passes 24/24.
-- **Open:** user review. Merging or opening a PR is the user's decision.
+- **Presenter's briefing** (Iteration 4, private):
+  https://claude.ai/artifact/PrWoChV2v16Ez4eKeemUr2. It covers architecture, data flow,
+  proof, demo script and Q&A. Republish from the same conversation, or pass that URL, to
+  update it.
+- **Open:**
+  - user review; merging or opening a PR is the user's decision
+  - before real extracts: DEV_LOG.md Phase F. F1 is a header-less EBQ reader, F2 is to
+    extend the holiday calendar past 2026-08-03.
 
 ---
 
@@ -166,6 +173,13 @@ Add to this list whenever something bites.
   extract. It is now rejected explicitly.
 - Charts: a month with one or two completed items can sit at 0%. Clip such values at the
   axis with a label rather than letting them set the scale.
+- **The real EBQ report has no header row.** The synthetic copy in `Claude_Data/` has one
+  added (see the workbook README). Header-based identification will reject the real file.
+  This is Phase F1.
+- The holiday calendar is exactly the workbook's list and ends 2026-08-03. Extend it
+  before loading later extracts (Phase F2).
+- Verification scale, for quoting: 14,898 rows per format (six tabs) plus 176
+  month-by-SLA results. It is not 16,898.
 
 **UI conventions**
 - Reuse the design system's classes and tokens (`card`, `stat`, `table`, `rag-*`,
@@ -183,6 +197,11 @@ Add to this list whenever something bites.
   the escapes get mangled. Use the Edit tool.
 - Python prints to a cp1252 console, so set `PYTHONIOENCODING=utf-8` when printing
   workbook text.
+- Artifact publishing: use the long temp path `C:\Users\OmmkarBisoi\AppData\Local\Temp\…`.
+  The 8.3 short form `OMMKAR~1` is blocked by the Read permission rule for supporting
+  files.
+- Headless Edge renders pages in the dark theme by default. Check both themes when it
+  matters.
 - There is no pandas or openpyxl. Use `exceljs` via Node (`npm install` has now been run).
 - Node 24: `node --test <dir>` fails with MODULE_NOT_FOUND. Pass a glob:
   `node --test "server/**/*.test.js"`.

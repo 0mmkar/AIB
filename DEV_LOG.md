@@ -252,6 +252,13 @@ Status key: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` dropped (with
 - [x] E2 `npm run build`, then a browser walk-through of the dashboard, extracts, month views, pack PDF and intelligence.
 - [x] E3 `npm run verify:real` and `npm test` still green.
 
+### Phase F — Before production (found in Iteration 4)
+- [ ] F1 **Header-less EBQ.** The workbook's README says the real EBQ report has no header row; the synthetic copy has one added. Extract identification relies on headers, so add a header-less EBQ reader that works from column positions, or agree a header at export.
+- [ ] F2 **Extend the holiday calendar.** `config/sla-schedule.json` holds exactly the workbook's list, 2025-01-01 → 2026-08-03. Add 2026-10-26, 2026-12-25, 2026-12-26 and 2027 before loading later extracts, or those days count as business days.
+- [ ] F3 Optional: pin published packs, so a newer snapshot cannot silently change a month already reported.
+- [ ] F4 Optional: show the workbook's alternative readings (23C as "2 working days", 23B NUL by name only).
+- [x] F5 Presenter's briefing published: https://claude.ai/artifact/PrWoChV2v16Ez4eKeemUr2 (private).
+
 
 ---
 
@@ -465,3 +472,35 @@ Note: the "exit code 127" notices for background servers were the servers stoppe
 - The Bedrock narrative passes both guards, and every pass/fail it states is correct.
 
 **Next:** user review in the browser (`npm run dev`). Nothing is on `main`. Merging or opening a PR is the user's call.
+
+### Iteration 4 — 2026-09-25 · Presenter's briefing
+
+**Goal:** explain the whole project for a presentation: data flow, architecture, a demo script, findings and likely questions.
+
+**Plan change:** added Phase F (§3). While preparing the briefing, two gaps surfaced that matter before any production use: the real EBQ report has no header row (F1), and the holiday calendar stops at 2026-08-03 (F2).
+
+**Changes**
+- No code, config or data changed.
+- Published a private page, "Schedule 23 Governance Briefing": https://claude.ai/artifact/PrWoChV2v16Ez4eKeemUr2. It contains:
+  - architecture and data-flow diagrams
+  - four items traced end to end
+  - the verification evidence and a demo script with fresh screenshots
+  - findings, design decisions, likely questions and limits
+- Updated the DEV_LOG.md plan (Phase F) and CLAUDE.md (status, pitfalls).
+
+**Errors faced**
+
+| # | Symptom | Root cause | Fix |
+|---|---|---|---|
+| E4.1 | Artifact publish refused the screenshots: "blocked by a Read permission rule" | The supporting-file paths used the Windows 8.3 short form `C:\Users\OMMKAR~1\…`, which the scratchpad permission rule does not match | Republished with the long path `C:\Users\OmmkarBisoi\AppData\Local\Temp\…` and relative `files` under `root` |
+| E4.2 | Correction to a chat summary from Iteration 3: it said the row-level check covered "16,898 rows" | Arithmetic slip | The six tabs hold 10,000 + 1,207 + 514 + 400 + 2,000 + 777 = **14,898** rows per format. The wrong total never reached a file; the briefing uses 14,898. |
+
+**Verification**
+- Every figure in the briefing was pulled from the live API or the packs:
+  - worked examples: workflow 7116767 created 14:59:31; CANREVEXT rows 629 (48h00m00s) and 816 (47h59m30s); workflow 7117564; EBQ A900011160003
+  - July 2025 is the only month where all five met target
+  - 10 withdrawals with no workflow, 10 approval workflows with no withdrawal, 424 rejected
+  - window rates incl. open, which match the workbook's Total row
+- One headless render of the page was checked, then published.
+
+**Next:** user review of the briefing. F1 and F2 are the first engineering tasks if this moves towards real extracts.
