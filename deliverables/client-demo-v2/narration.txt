@@ -1,0 +1,68 @@
+Every service level. One clear story.
+Welcome to A I B Life's service governance application. Follow the complete journey, from operational data sources to a clear, evidence based view of performance.
+
+From evidence to governance
+Upload your data sources, apply the Schedule twenty three rules, investigate the results, and share a monthly governance pack. Here is how the journey connects.
+
+Start with the whole picture
+The dashboard brings reporting periods together. See which service levels missed target, how many policies were measured, and what remains overdue. A shortcut opens the latest governance pack.
+
+Load the evidence once
+Start in Data Sources. Upload correspondence, cancellation, withdrawal, and workflow files as CSV or Excel. The application identifies each source from its contents.
+
+Five sources. One reporting picture.
+The checklist confirms all five required sources. File details show the records received. The snapshot date and quality notes explain the evidence behind the reporting set.
+
+Every reporting month, rebuilt together
+New files replace earlier files in the same slot and rebuild every monthly pack. Analysts can also rebuild on demand, remove files, or reload the supplied data sources.
+
+Choose the period that matters
+Choose a reporting month from the dashboard. Search makes older periods easy to find. Incomplete periods are clearly labelled, keeping partial months in context.
+
+Review the SLA Status
+Reports provides access to S L A Status, exceptions, and the governance pack. Status compares five headline service levels against target, with met, missed, and overdue counts.
+
+Two rates. Two useful perspectives.
+Pass or fail uses completed policies: met divided by met plus missed. The second rate includes overdue open work. Counts represent service records, so a policy can appear more than once.
+
+Trace a percentage to its policies
+Select a service level to see its underlying policies. Product, handler, timing, and outcome connect each result to operational evidence. Unit linked performance also expands into three component steps.
+
+Focus on policies that missed
+Outcome filters narrow the list immediately. Isolate missed policies and compare the required deadline with actual completion, using the evidence that produced the monthly score.
+
+Separate missed work from overdue work
+Exceptions brings failing service levels and failed policies together. Switch between missed deadlines and open overdue work. A service level can pass overall and still contain individual exceptions.
+
+Keep evidence quality in view
+Data quality findings flag overdue policies, unmatched approvals, exclusions, and incomplete periods. Reviewers can see where the evidence needs attention before drawing conclusions.
+
+Open the wider performance story
+Open Intelligence to explore the reporting history. The latest complete month's status sits alongside recurring misses, performance trends, and outstanding work across the reporting window.
+
+Executive insight with Amazon Nova
+Amazon Nova Pro turns the computed report figures into an executive explanation. The summary covers recent performance, the wider reporting window, failure concentrations, and overdue backlog.
+
+Explore performance against target
+Monthly trends compare each service level with its target over time. Change the selection to explore another pattern. The service level record summarises complete months below target.
+
+Choose a reporting window
+The scope selector narrows the analysis to a chosen month and everything before it. The executive summary refreshes for that window, keeping the governance discussion focused.
+
+See where failures concentrate
+Failure concentrations highlight handlers, products, and transaction types with unusually high failure rates. These patterns direct investigation. They show where failures occur, without proving their cause.
+
+Keep outstanding obligations visible
+The backlog groups open overdue policies by service level and shows the oldest deadline. This keeps unfinished obligations visible alongside the formal completed policy performance rate.
+
+Ask Nova about the report
+Ask a question about the report. Here, Nova explains where non unit linked failures concentrate. The model's answer uses the report's computed evidence, with its source identified beneath the response.
+
+Open the Governance pack
+Open Governance pack directly from the month's results. The dashboard also offers a shortcut to the latest complete month. Summary, S L A Status, exceptions, quality findings, and source evidence form one document.
+
+Download a report to share
+Select Export as PDF, then choose Save as PDF in the browser's print window. Share the monthly findings with colleagues and clients, supported by the evidence reviewed throughout this journey.
+
+Evidence. Understanding. Accountability.
+From five data sources to a traceable governance story. Prepare the evidence, review performance, investigate exceptions, and share the findings. A I B Life, with clarity at every step.

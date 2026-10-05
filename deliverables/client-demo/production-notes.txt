@@ -1,0 +1,15 @@
+AIB LIFE APPLICATION DEMO
+
+Format: 1920 x 1080, 24 fps, H.264 video with AAC stereo audio.
+Duration: 237.17 seconds.
+
+The screen imagery was captured from the actual application. Zooms, cursor cues and transitions are editorial effects applied to captured interaction states.
+The five input files were verified byte-for-byte against the current application dataset. Results, item records, quality findings and failure groups matched across all 22 months, with zero differences.
+Upload and rebuild actions used an isolated copy to preserve the original stored reports. Capture timestamps therefore reflect the recording session.
+Narration: generated voice, standard en-GB-SoniaNeural, through edge-tts (https://github.com/rany2/edge-tts). No cloned voice.
+Music: original instrumental score synthesised by scripts/demo/render.py; no third-party music recordings or samples.
+Q&A shown uses the application's built-in computed-figures response. The optional Bedrock integration is described, not represented as active in this capture.
+PDF output is illustrated with the real print-rendered document; the operating-system print dialog is not recorded.
+
+Files: MP4 master; caption sidecars (SRT and WebVTT); voice script; preview poster; storyboard contact sheet; local HTML player.
+Recreate with capture.mjs, verify-data.mjs, voice.py and render.py in scripts/demo. Python packages: Pillow, numpy, imageio-ffmpeg, edge-tts.

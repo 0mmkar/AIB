@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Logo from './Logo.jsx';
-import { IconLayers, IconSearch, IconBolt, IconChevron, IconCircleCheck, IconCloud } from './Icons.jsx';
+import { IconLayers, IconSearch, IconDoc, IconChevron, IconCircleCheck, IconCloud } from './Icons.jsx';
 
 /**
  * Left navigation.
@@ -8,7 +8,7 @@ import { IconLayers, IconSearch, IconBolt, IconChevron, IconCircleCheck, IconClo
  * Two rules drive the shape of this: it must never scroll, and it must not feel packed.
  * Those pull against each other once there are more reporting periods than fit, so the rail
  * shows only the most recent few and makes everything older reachable by search rather than
- * by growing the list. The per-period views collapse behind a single Actions control for the
+ * by growing the list. The per-period views collapse behind a single Reports control for the
  * same reason — four nav rows appearing the moment you open a period was what pushed the
  * rail past the fold.
  */
@@ -64,7 +64,7 @@ export default function Rail({
   // hash change rather than a reload — must take the menu with it.
   useEffect(() => setActionsOpen(false), [month]);
 
-  // Close the Actions popover on outside click or Escape.
+  // Close the Reports popover on outside click or Escape.
   useEffect(() => {
     if (!actionsOpen) return;
     const onDown = (e) => {
@@ -107,7 +107,7 @@ export default function Rail({
             {boot.months.length > 0 && <span className="nav-count">{boot.months.length}</span>}
           </button>
           <button className={`nav-item${page === 'extracts' ? ' is-active' : ''}`} onClick={onExtracts}>
-            <IconCloud size={17} /> Extracts
+            <IconCloud size={17} /> Data Sources
             {boot.snapshot && <span className="nav-count">{boot.snapshot.sourceCount}</span>}
           </button>
         </nav>
@@ -154,10 +154,10 @@ export default function Rail({
               aria-expanded={actionsOpen}
               aria-haspopup="menu"
             >
-              <span className="actions-icon"><IconBolt size={15} /></span>
+              <span className="actions-icon"><IconDoc size={15} /></span>
               <span className="actions-text">
-                <span className="actions-title">Actions</span>
-                <span className="actions-current">{currentView ? currentView.label : 'Choose a view'}</span>
+                <span className="actions-title">Reports</span>
+                <span className="actions-current">{currentView ? currentView.label : 'Choose a report'}</span>
               </span>
               <span className="actions-chevron"><IconChevron /></span>
             </button>
@@ -165,8 +165,8 @@ export default function Rail({
         )}
 
         <div className="rail-foot">
-          Schedule 23 · TCS BaNCS extracts{boot.snapshot ? ` · as of ${boot.snapshot.as_of_label}` : ''}
-          <span className="rail-foot-more"><br />Every figure calculated by rule from the extract records.</span>
+          Schedule 23 · Data Sources{boot.snapshot ? ` · as of ${boot.snapshot.as_of_label}` : ''}
+          <span className="rail-foot-more"><br />Every figure calculated by rule from the data source records.</span>
         </div>
       </aside>
 

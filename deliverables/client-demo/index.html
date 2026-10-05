@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIB Life · Application demo</title>
+<style>
+:root{color-scheme:dark;font-family:'Segoe UI',Arial,sans-serif;background:#100d1d;color:#f7f4ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% 0,#302150,transparent 60%);min-height:100vh}.wrap{max-width:1280px;padding:46px 28px;margin:auto}.brand{font-size:14px;letter-spacing:2px;color:#b8a8ff;font-weight:700}.heading{display:flex;justify-content:space-between;align-items:end;gap:30px;margin:24px 0}h1{font-size:clamp(28px,4vw,45px);line-height:1.15;letter-spacing:-1px;margin:0 0 10px}p{color:#bcb4d4;font-size:15px;line-height:1.7;margin:0}.meta{white-space:nowrap;font-size:12px;border:1px solid #564873;padding:9px 14px;border-radius:99px;color:#cbbbe8}video{width:100%;display:block;border-radius:16px;background:#080610;box-shadow:0 20px 90px #0005;outline:1px solid #4c3b68}.chapters{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}button,.button{font:inherit;font-size:13px;color:#eae2ff;background:#251c3a;border:1px solid #4b3c66;border-radius:9px;padding:11px 16px;text-decoration:none;cursor:pointer}button:hover,.button:hover{background:#463168}button:focus-visible,a:focus-visible{outline:3px solid #af96ff;outline-offset:4px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:27px}.primary{background:#9679f4;color:#170c30;border-color:#9679f4;font-weight:700}.footer{border-top:1px solid #382b4b;margin-top:34px;padding-top:20px;font-size:12px;color:#9285ad}.footer a{color:#c9b5ff}.note{margin-top:20px;font-size:12px}@media(max-width:650px){.heading{display:block}.meta{display:inline-block;margin-top:16px}.wrap{padding:30px 16px}h1{font-size:29px}}
+</style>
+</head>
+<body><main class="wrap">
+<div class="brand">AIB LIFE / SERVICE GOVERNANCE</div>
+<div class="heading"><div><h1>From evidence to clear accountability.</h1><p>A guided journey through the application, using the current extract data.</p></div><span class="meta">3:57 · Full HD · Narrated</span></div>
+<video id="demo" controls preload="metadata" poster="poster.jpg"><source src="AIB-Life-Application-Demo.mp4" type="video/mp4">Your browser does not support video. Download the MP4 below.</video>
+<div class="chapters" aria-label="Video chapters"><button data-time="0">Overview</button><button data-time="18.833333">Prepare the evidence</button><button data-time="57.75">Review performance</button><button data-time="89.083333">Investigate exceptions</button><button data-time="132.291667">Understand the patterns</button><button data-time="207.25">Share the pack</button></div>
+<div class="actions"><a class="button primary" href="AIB-Life-Application-Demo.mp4" download>Download the video ↓</a><a class="button" href="captions.srt" download>Download captions</a><a class="button" href="narration.txt">Read the narration</a></div>
+<p class="note">Includes spoken narration, on-screen captions, guided zooms and an original instrumental soundtrack.</p>
+<div class="footer">Extract as of 24 September 2026 · Same five input files and 22 reporting months as the application.<br>Generated voiceover · <a href="production-notes.txt">Production notes</a></div>
+</main><script>document.querySelectorAll('[data-time]').forEach(button=>button.addEventListener('click',()=>{const video=document.getElementById('demo');video.currentTime=Number(button.dataset.time);video.play().catch(error=>{if(error.name!=='AbortError')document.querySelector('.note').textContent='Press Play in the video controls to begin playback.';});}));</script></body>
+</html>

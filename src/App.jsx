@@ -10,23 +10,24 @@ import Rail from './components/Rail.jsx';
 import { IconGrid, IconAlert, IconDoc, IconClock, IconSpark } from './components/Icons.jsx';
 import { fmtStamp } from './lib/format.js';
 
-/** Per-period views, reached from the rail's Actions menu. */
+/** Per-period views, reached from the rail's Reports menu. */
 const VIEWS = [
-  { id: 'position', label: 'SLA position', icon: IconGrid },
+  { id: 'position', label: 'SLA Status', icon: IconGrid },
   { id: 'exceptions', label: 'SLA exceptions', icon: IconAlert },
   { id: 'pack', label: 'Governance pack', icon: IconDoc },
 ];
 
 /**
- * Screens are addressable: "#dashboard", "#extracts", "#2026-08/exceptions", with a
+ * Screens are addressable: "#dashboard", "#data-sources", "#2026-08/exceptions", with a
  * trailing "/intel" opening the intelligence panel over whatever is underneath.
  */
 function parseHash() {
   const raw = window.location.hash.replace('#', '');
   const intel = raw === 'intelligence' || raw.endsWith('/intel');
-  const [a, b] = raw.replace(/\/intel$/, '').split('/');
+  const [a, route] = raw.replace(/\/intel$/, '').split('/');
+  const b = route === 'status' ? 'position' : route;
   if (/^\d{4}-\d{2}$/.test(a)) return { page: 'month', month: a, view: VIEWS.some((v) => v.id === b) ? b : 'position', intel };
-  if (a === 'extracts') return { page: 'extracts', month: null, view: 'position', intel };
+  if (a === 'data-sources' || a === 'extracts') return { page: 'extracts', month: null, view: 'position', intel };
   return { page: 'dashboard', month: null, view: 'position', intel };
 }
 
@@ -69,7 +70,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const base = page === 'month' ? `${month}/${view}` : page;
+    const base = page === 'month' ? `${month}/${view === 'position' ? 'status' : view}` : page === 'extracts' ? 'data-sources' : page;
     const want = `#${intelOpen ? (page === 'month' ? `${base}/intel` : 'intelligence') : base}`;
     if (window.location.hash !== want) window.history.replaceState(null, '', want);
   }, [page, month, view, intelOpen]);
@@ -107,7 +108,7 @@ export default function App() {
   const snapshot = boot.snapshot;
   const activeMonth = boot.months.find((m) => m.month === month);
   const currentView = VIEWS.find((v) => v.id === view);
-  const title = page === 'dashboard' ? 'Governance dashboard' : page === 'extracts' ? 'BaNCS extracts' : currentView?.label;
+  const title = page === 'dashboard' ? 'Governance dashboard' : page === 'extracts' ? 'Data Sources' : currentView?.label;
 
   return (
     <div className="app">
@@ -139,15 +140,23 @@ export default function App() {
             <IconClock />
             {snapshot ? (
               <span>
-                Extract as of <b>{snapshot.as_of_label}</b> · built {fmtStamp(snapshot.generated_at)}
+                Data source as of <b>{snapshot.as_of_label}</b> · built {fmtStamp(snapshot.generated_at)}
               </span>
             ) : (
-              <span>No extract set loaded</span>
+              <span>No data sources loaded</span>
             )}
           </div>
         </header>
 
         <div className="page">
+          {page === 'month' && activeMonth && view !== 'pack' && (
+            <div className="row wrap no-print" style={{ justifyContent: 'space-between', gap: 12 }}>
+              <span className="tiny muted">Review and export this month’s findings for sharing.</span>
+              <button className="btn btn-soft btn-sm" onClick={() => setView('pack')}>
+                <IconDoc /> Governance pack
+              </button>
+            </div>
+          )}
           {page === 'dashboard' && <Dashboard boot={boot} onOpenMonth={openMonth} onExtracts={showExtracts} />}
 
           {page === 'extracts' && <Extracts boot={boot} onChanged={loadBoot} toast={notify} onOpenDashboard={showDashboard} />}
@@ -156,7 +165,7 @@ export default function App() {
             <div className="card empty">
               <div className="empty-icon"><IconAlert size={26} /></div>
               <h3>No pack for {month}</h3>
-              <p>The loaded extracts contain no measured items for this period.</p>
+              <p>The loaded data sources contain no measured policies for this period.</p>
             </div>
           )}
           {page === 'month' && activeMonth && !analysis && (
@@ -169,10 +178,10 @@ export default function App() {
           {page === 'month' && analysis && (
             <div className="row no-print" style={{ justifyContent: 'space-between', paddingTop: 4 }}>
               <span className="tiny muted">
-                Built from {analysis.sources.length} BaNCS extract file{analysis.sources.length === 1 ? '' : 's'} as of{' '}
+                Built from {analysis.sources.length} data source file{analysis.sources.length === 1 ? '' : 's'} as of{' '}
                 {analysis.as_of_label} · every figure calculated by rule from the records, not inferred
               </span>
-              <button className="btn btn-ghost btn-sm" onClick={showExtracts}>Manage extracts</button>
+              <button className="btn btn-ghost btn-sm" onClick={showExtracts}>Manage data sources</button>
             </div>
           )}
         </div>

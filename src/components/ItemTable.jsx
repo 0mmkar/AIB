@@ -27,7 +27,7 @@ export default function ItemTable({ items, slaLabel, showSla = true }) {
   const [shown, setShown] = useState(PAGE);
   const rows = useMemo(() => items.slice(0, shown), [items, shown]);
 
-  if (!items.length) return <p className="tiny muted" style={{ padding: '4px 2px' }}>No items.</p>;
+  if (!items.length) return <p className="tiny muted" style={{ padding: '4px 2px' }}>No policies.</p>;
 
   return (
     <>

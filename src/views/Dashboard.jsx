@@ -1,6 +1,7 @@
 import Logo from '../components/Logo.jsx';
 import { IconCloud, IconDoc, IconClock } from '../components/Icons.jsx';
 import { fmtCount } from '../lib/format.js';
+import { POLICY_COUNT_NOTE } from '../lib/customerCopy.js';
 
 /**
  * Landing screen. Every reporting period built from the current extract set, newest first
@@ -10,6 +11,7 @@ export default function Dashboard({ boot, onOpenMonth, onExtracts }) {
   const { months, snapshot, slas } = boot;
   const labelOf = Object.fromEntries(slas.map((s) => [s.id, s.label]));
   const headline = slas.filter((s) => !s.parent);
+  const packMonth = months.find((m) => !m.partial) ?? months[0];
 
   const totals = months.reduce(
     (acc, m) => ({
@@ -34,17 +36,23 @@ export default function Dashboard({ boot, onOpenMonth, onExtracts }) {
           <Logo height={30} plate={false} />
           <h1>SLA Governance</h1>
           <p>
-            {headline.length} Schedule 23 service levels — {headline.map((s) => s.label).join(', ')} — measured item by
-            item from the TCS BaNCS extracts against their business-day rules, with one governance pack per reporting month.
+            {headline.length} Schedule 23 service levels — {headline.map((s) => s.label).join(', ')} — measured policy by
+            policy from the data sources against their business-day rules, with one governance pack per reporting month.
           </p>
+          <div className="dash-hero-note" style={{ whiteSpace: 'normal' }}>{POLICY_COUNT_NOTE}</div>
           <div className="dash-hero-actions">
             <button className="btn btn-hero" onClick={onExtracts}>
               <IconCloud size={18} />
-              {snapshot ? 'Manage BaNCS extracts' : 'Load BaNCS extracts'}
+              {snapshot ? 'Manage data sources' : 'Load data sources'}
             </button>
+            {packMonth && (
+              <button className="btn btn-soft" onClick={() => onOpenMonth(packMonth.month, 'pack')}>
+                <IconDoc size={18} /> Governance pack · {packMonth.label}
+              </button>
+            )}
             {snapshot && (
               <span className="dash-hero-note">
-                Extract as of <b>{snapshot.as_of_label}</b> · {snapshot.sourceCount} files
+                Data source as of <b>{snapshot.as_of_label}</b> · {snapshot.sourceCount} files
               </span>
             )}
           </div>
@@ -53,9 +61,9 @@ export default function Dashboard({ boot, onOpenMonth, onExtracts }) {
         {snapshot && (
           <div className="dash-hero-stats">
             <HeroStat label="Reporting periods" value={months.length} />
-            <HeroStat label="Extract records read" value={fmtCount(snapshot.records)} />
+            <HeroStat label="Data source records read" value={fmtCount(snapshot.records)} />
             <HeroStat label="Service-level months below target" value={totals.fails} tone="red" />
-            <HeroStat label="Items open past deadline" value={fmtCount(totals.overdue)} tone="warm" />
+            <HeroStat label="Policies open past deadline" value={fmtCount(totals.overdue)} tone="warm" />
           </div>
         )}
       </div>
@@ -64,8 +72,8 @@ export default function Dashboard({ boot, onOpenMonth, onExtracts }) {
         <div className="card empty">
           <div className="empty-icon"><IconDoc size={26} /></div>
           <h3>No governance packs yet</h3>
-          <p>Load the BaNCS extract set — EBQ, CANREVEXT, WITHDRAWALEXT and the two WRKFLWEXT files — and a pack is built for every month they cover.</p>
-          <button className="btn btn-primary btn-sm" style={{ marginTop: 14 }} onClick={onExtracts}>Go to extracts</button>
+          <p>Load the data sources — EBQ, CANREVEXT, WITHDRAWALEXT and the two WRKFLWEXT files — and a pack is built for every month they cover.</p>
+          <button className="btn btn-primary btn-sm" style={{ marginTop: 14 }} onClick={onExtracts}>Go to data sources</button>
         </div>
       ) : (
         [...byYear.entries()].map(([year, list]) => (
@@ -73,7 +81,7 @@ export default function Dashboard({ boot, onOpenMonth, onExtracts }) {
             <div className="dash-section-head">
               <h2>{year}</h2>
               <span className="tiny muted">
-                {list.length} reporting period{list.length === 1 ? '' : 's'} · open one for its SLA position, exceptions and pack
+                {list.length} reporting period{list.length === 1 ? '' : 's'} · open one for its SLA Status, exceptions and pack
               </span>
             </div>
             <div className="dash-grid">
@@ -135,12 +143,12 @@ function PeriodCard({ m, labelOf, onOpen }) {
 
       <div className="period-foot">
         <span className="row" style={{ gap: 6 }}>
-          <IconClock /> {fmtCount(s.measured)} items measured
+          <IconClock /> {fmtCount(s.measured)} policies measured
         </span>
         <span>{s.openPastDeadline ? `${fmtCount(s.openPastDeadline)} overdue open` : 'nothing overdue'}</span>
       </div>
       <div className="period-stamp">
-        {s.failing.length ? `Missed: ${s.failing.map((id) => labelOf[id] ?? id).join(', ')}` : 'Every service level with completed items met target'}
+        {s.failing.length ? `Missed: ${s.failing.map((id) => labelOf[id] ?? id).join(', ')}` : 'Every service level with completed policies met target'}
       </div>
     </button>
   );

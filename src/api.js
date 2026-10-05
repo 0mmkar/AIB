@@ -1,6 +1,8 @@
+import { customerResponse } from './lib/customerCopy.js';
+
 async function req(url, options) {
   const res = await fetch(url, options);
-  const body = await res.json().catch(() => ({}));
+  const body = customerResponse(await res.json().catch(() => ({})));
   if (!res.ok) throw new Error(body.error || `Request failed (${res.status})`);
   return body;
 }

@@ -1,0 +1,452 @@
+[
+  {
+    "id": "intro",
+    "chapter": "Overview",
+    "title": "Every service level. One clear story.",
+    "type": "title",
+    "voice": "Welcome to A I B Life's service governance application. Follow the complete journey, from operational data sources to a clear, evidence based view of performance.",
+    "shots": []
+  },
+  {
+    "id": "flow",
+    "chapter": "Overview",
+    "title": "From evidence to governance",
+    "type": "flow",
+    "voice": "Upload your data sources, apply the Schedule twenty three rules, investigate the results, and share a monthly governance pack. Here is how the journey connects.",
+    "shots": []
+  },
+  {
+    "id": "dashboard",
+    "chapter": "Prepare",
+    "title": "Start with the whole picture",
+    "voice": "The dashboard brings reporting periods together. See which service levels missed target, how many policies were measured, and what remains overdue. A shortcut opens the latest governance pack.",
+    "shots": [
+      {
+        "name": "dashboard",
+        "zoom": 1.04,
+        "focus": [
+          0.59,
+          0.42
+        ]
+      }
+    ]
+  },
+  {
+    "id": "upload",
+    "chapter": "Prepare",
+    "title": "Load the evidence once",
+    "voice": "Start in Data Sources. Upload correspondence, cancellation, withdrawal, and workflow files as CSV or Excel. The application identifies each source from its contents.",
+    "shots": [
+      {
+        "name": "extracts-empty",
+        "zoom": 1.3,
+        "focus": [
+          0.4,
+          0.42
+        ],
+        "click": true
+      },
+      {
+        "name": "extracts-loaded",
+        "zoom": 1.12,
+        "focus": [
+          0.59,
+          0.48
+        ]
+      }
+    ]
+  },
+  {
+    "id": "coverage",
+    "chapter": "Prepare",
+    "title": "Five sources. One reporting picture.",
+    "voice": "The checklist confirms all five required sources. File details show the records received. The snapshot date and quality notes explain the evidence behind the reporting set.",
+    "shots": [
+      {
+        "name": "extracts-loaded",
+        "zoom": 1.35,
+        "focus": [
+          0.48,
+          0.57
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rebuild",
+    "chapter": "Prepare",
+    "title": "Every reporting month, rebuilt together",
+    "voice": "New files replace earlier files in the same slot and rebuild every monthly pack. Analysts can also rebuild on demand, remove files, or reload the supplied data sources.",
+    "shots": [
+      {
+        "name": "extracts-controls",
+        "zoom": 1.35,
+        "focus": [
+          0.44,
+          0.72
+        ],
+        "click": true
+      },
+      {
+        "name": "extracts-rebuilt",
+        "zoom": 1.06,
+        "focus": [
+          0.62,
+          0.5
+        ]
+      }
+    ]
+  },
+  {
+    "id": "period",
+    "chapter": "Review",
+    "title": "Choose the period that matters",
+    "voice": "Choose a reporting month from the dashboard. Search makes older periods easy to find. Incomplete periods are clearly labelled, keeping partial months in context.",
+    "shots": [
+      {
+        "name": "search",
+        "zoom": 1.45,
+        "focus": [
+          0.22,
+          0.4
+        ]
+      },
+      {
+        "name": "choose-month",
+        "zoom": 1.22,
+        "focus": [
+          0.62,
+          0.65
+        ],
+        "click": true
+      }
+    ]
+  },
+  {
+    "id": "position",
+    "chapter": "Review",
+    "title": "Review the SLA Status",
+    "voice": "Reports provides access to S L A Status, exceptions, and the governance pack. Status compares five headline service levels against target, with met, missed, and overdue counts.",
+    "shots": [
+      {
+        "name": "reports-menu",
+        "zoom": 1.15,
+        "focus": [
+          0.34,
+          0.6
+        ],
+        "click": true
+      },
+      {
+        "name": "position",
+        "zoom": 1.02,
+        "focus": [
+          0.59,
+          0.47
+        ]
+      },
+      {
+        "name": "rates",
+        "zoom": 1.2,
+        "focus": [
+          0.65,
+          0.54
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rates",
+    "chapter": "Review",
+    "title": "Two rates. Two useful perspectives.",
+    "type": "rates",
+    "voice": "Pass or fail uses completed policies: met divided by met plus missed. The second rate includes overdue open work. Counts represent service records, so a policy can appear more than once.",
+    "shots": []
+  },
+  {
+    "id": "drilldown",
+    "chapter": "Investigate",
+    "title": "Trace a percentage to its policies",
+    "voice": "Select a service level to see its underlying policies. Product, handler, timing, and outcome connect each result to operational evidence. Unit linked performance also expands into three component steps.",
+    "shots": [
+      {
+        "name": "select-sla",
+        "zoom": 1.25,
+        "focus": [
+          0.53,
+          0.51
+        ],
+        "click": true
+      },
+      {
+        "name": "drilldown",
+        "zoom": 1.08,
+        "focus": [
+          0.6,
+          0.42
+        ]
+      }
+    ]
+  },
+  {
+    "id": "missed",
+    "chapter": "Investigate",
+    "title": "Focus on policies that missed",
+    "voice": "Outcome filters narrow the list immediately. Isolate missed policies and compare the required deadline with actual completion, using the evidence that produced the monthly score.",
+    "shots": [
+      {
+        "name": "drilldown-missed",
+        "zoom": 1.3,
+        "focus": [
+          0.69,
+          0.3
+        ]
+      }
+    ]
+  },
+  {
+    "id": "exceptions",
+    "chapter": "Investigate",
+    "title": "Separate missed work from overdue work",
+    "voice": "Exceptions brings failing service levels and failed policies together. Switch between missed deadlines and open overdue work. A service level can pass overall and still contain individual exceptions.",
+    "shots": [
+      {
+        "name": "exceptions",
+        "zoom": 1.06,
+        "focus": [
+          0.6,
+          0.42
+        ]
+      },
+      {
+        "name": "exception-filter",
+        "zoom": 1.17,
+        "focus": [
+          0.57,
+          0.33
+        ],
+        "click": true
+      },
+      {
+        "name": "exceptions-overdue",
+        "zoom": 1.19,
+        "focus": [
+          0.65,
+          0.35
+        ]
+      }
+    ]
+  },
+  {
+    "id": "quality",
+    "chapter": "Investigate",
+    "title": "Keep evidence quality in view",
+    "voice": "Data quality findings flag overdue policies, unmatched approvals, exclusions, and incomplete periods. Reviewers can see where the evidence needs attention before drawing conclusions.",
+    "shots": [
+      {
+        "name": "quality",
+        "zoom": 1.2,
+        "focus": [
+          0.6,
+          0.4
+        ]
+      }
+    ]
+  },
+  {
+    "id": "intelligence",
+    "chapter": "Understand",
+    "title": "Open the wider performance story",
+    "voice": "Open Intelligence to explore the reporting history. The latest complete month's status sits alongside recurring misses, performance trends, and outstanding work across the reporting window.",
+    "shots": [
+      {
+        "name": "open-intelligence",
+        "zoom": 1.02,
+        "focus": [
+          0.65,
+          0.53
+        ],
+        "click": true
+      },
+      {
+        "name": "intelligence",
+        "zoom": 1.07,
+        "focus": [
+          0.63,
+          0.42
+        ]
+      }
+    ]
+  },
+  {
+    "id": "narrative",
+    "chapter": "Understand",
+    "title": "Executive insight with Amazon Nova",
+    "voice": "Amazon Nova Pro turns the computed report figures into an executive explanation. The summary covers recent performance, the wider reporting window, failure concentrations, and overdue backlog.",
+    "shots": [
+      {
+        "name": "narrative",
+        "zoom": 1.15,
+        "focus": [
+          0.6,
+          0.39
+        ]
+      }
+    ]
+  },
+  {
+    "id": "trends",
+    "chapter": "Understand",
+    "title": "Explore performance against target",
+    "voice": "Monthly trends compare each service level with its target over time. Change the selection to explore another pattern. The service level record summarises complete months below target.",
+    "shots": [
+      {
+        "name": "trends",
+        "zoom": 1.22,
+        "focus": [
+          0.4,
+          0.34
+        ]
+      },
+      {
+        "name": "trends-cancellation",
+        "zoom": 1.22,
+        "focus": [
+          0.4,
+          0.34
+        ]
+      }
+    ]
+  },
+  {
+    "id": "scope",
+    "chapter": "Understand",
+    "title": "Choose a reporting window",
+    "voice": "The scope selector narrows the analysis to a chosen month and everything before it. The executive summary refreshes for that window, keeping the governance discussion focused.",
+    "shots": [
+      {
+        "name": "scope",
+        "zoom": 1.27,
+        "focus": [
+          0.43,
+          0.32
+        ]
+      }
+    ]
+  },
+  {
+    "id": "drivers",
+    "chapter": "Understand",
+    "title": "See where failures concentrate",
+    "voice": "Failure concentrations highlight handlers, products, and transaction types with unusually high failure rates. These patterns direct investigation. They show where failures occur, without proving their cause.",
+    "shots": [
+      {
+        "name": "drivers",
+        "zoom": 1.18,
+        "focus": [
+          0.6,
+          0.38
+        ]
+      }
+    ]
+  },
+  {
+    "id": "backlog",
+    "chapter": "Understand",
+    "title": "Keep outstanding obligations visible",
+    "voice": "The backlog groups open overdue policies by service level and shows the oldest deadline. This keeps unfinished obligations visible alongside the formal completed policy performance rate.",
+    "shots": [
+      {
+        "name": "backlog",
+        "zoom": 1.17,
+        "focus": [
+          0.62,
+          0.54
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ask",
+    "chapter": "Understand",
+    "title": "Ask Nova about the report",
+    "voice": "Ask a question about the report. Here, Nova explains where non unit linked failures concentrate. The model's answer uses the report's computed evidence, with its source identified beneath the response.",
+    "shots": [
+      {
+        "name": "ask-typed",
+        "zoom": 1.18,
+        "focus": [
+          0.59,
+          0.26
+        ],
+        "click": true
+      },
+      {
+        "name": "ask-answer",
+        "zoom": 1.2,
+        "focus": [
+          0.59,
+          0.3
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pack",
+    "chapter": "Share",
+    "title": "Open the Governance pack",
+    "voice": "Open Governance pack directly from the month's results. The dashboard also offers a shortcut to the latest complete month. Summary, S L A Status, exceptions, quality findings, and source evidence form one document.",
+    "shots": [
+      {
+        "name": "pack-shortcut",
+        "zoom": 1.15,
+        "focus": [
+          0.73,
+          0.23
+        ],
+        "click": true
+      },
+      {
+        "name": "pack",
+        "zoom": 1.08,
+        "focus": [
+          0.62,
+          0.43
+        ]
+      }
+    ]
+  },
+  {
+    "id": "export",
+    "chapter": "Share",
+    "title": "Download a report to share",
+    "voice": "Select Export as PDF, then choose Save as PDF in the browser's print window. Share the monthly findings with colleagues and clients, supported by the evidence reviewed throughout this journey.",
+    "shots": [
+      {
+        "name": "export",
+        "zoom": 1.1,
+        "focus": [
+          0.72,
+          0.27
+        ],
+        "click": true
+      },
+      {
+        "name": "pack-print",
+        "zoom": 1.03,
+        "focus": [
+          0.5,
+          0.45
+        ]
+      }
+    ]
+  },
+  {
+    "id": "closing",
+    "chapter": "Overview",
+    "title": "Evidence. Understanding. Accountability.",
+    "type": "closing",
+    "voice": "From five data sources to a traceable governance story. Prepare the evidence, review performance, investigate exceptions, and share the findings. A I B Life, with clarity at every step.",
+    "shots": []
+  }
+]

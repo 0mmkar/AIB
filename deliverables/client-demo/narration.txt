@@ -1,0 +1,68 @@
+Every service level. One clear story.
+Welcome to A I B Life's service governance application. This walkthrough follows the complete journey, from operational extracts to a clear, evidence based view of performance.
+
+From evidence to governance
+The flow is straightforward. Bring in the BaNCS extracts, apply the Schedule twenty three rules, investigate the results, and share a monthly governance pack. Let's follow that journey.
+
+Start with the whole picture
+The dashboard brings reporting periods into one place. At a glance, see which service levels missed target, how much work was measured, and what remains overdue.
+
+Load the evidence once
+An operations analyst starts in Extracts. Upload the correspondence, cancellation, withdrawal, and workflow files as CSV or Excel. The application identifies each extract from its contents.
+
+Five slots. One current extract set.
+The checklist confirms coverage of all five slots. File details show the records received, while the extract date and quality notes explain the evidence behind the reporting set.
+
+Every reporting month, rebuilt together
+New files replace earlier files in the same slot. Every monthly pack is rebuilt. Analysts can also rebuild on demand, remove files, or reload the delivered extract set.
+
+Choose the period that matters
+Next, choose a reporting month from the dashboard. Older periods are easy to find using search. Incomplete periods are clearly labelled, so a partial month stays in context.
+
+Read the Schedule 23 position
+The S L A position compares five headline service levels with their targets. Met, missed, and overdue counts sit beside the verdict. Unit linked performance expands into three component steps.
+
+Two rates. Two useful perspectives.
+Pass or fail uses completed items: met divided by met plus missed. The second rate also includes overdue open work, making unfinished service obligations visible alongside completed performance.
+
+Go from a percentage to its records
+Select a service level to open the underlying items. Each record shows its policy, product, handler, timing, and outcome. The reviewer can trace the result back to operational evidence.
+
+Focus on the items that missed
+Outcome filters narrow the list immediately. Here, the reviewer isolates missed items and compares the required deadline with the actual completion, using the same evidence that produced the monthly score.
+
+Separate missed work from overdue work
+The Exceptions view brings failing service levels and failed items together. Switch between missed deadlines and open overdue work to focus the investigation. Even a passing service level can contain individual exceptions.
+
+Keep evidence quality in view
+Data quality findings stay beside the results. They flag overdue items, unmatched approvals, exclusions, and incomplete periods, helping reviewers understand where the evidence needs attention before drawing conclusions.
+
+Open the wider performance story
+The governance lead opens Intelligence for the historical view. This panel connects the latest complete month's position with patterns across the reporting window, including recurring misses and outstanding work.
+
+A concise executive explanation
+Executive insight turns the computed figures into a readable summary. It describes the latest position, the wider record, failure concentrations, and overdue backlog. The application also supports optional Bedrock generated wording.
+
+Explore performance against target
+Monthly trends show how each service level compares with its target over time. Change the selected service level to explore another pattern, while the service level record summarises complete months below target.
+
+Choose a reporting window
+The scope selector narrows the analysis to a chosen month and everything before it. This filters the current reporting history, making the relevant window easier to discuss in a governance meeting.
+
+See where failures concentrate
+Failure concentrations highlight handlers, products, and transaction types with unusually high failure rates. These patterns help direct investigation; they describe where the failures sit, rather than proving their cause.
+
+Keep outstanding obligations visible
+The backlog view groups open overdue items by service level and shows the oldest deadline. This adds a practical view of unfinished work alongside the formal completed item performance rate.
+
+Ask a question about this report
+For a direct explanation, ask about the report. Here, we ask where non unit linked failures concentrate. The answer uses already computed report figures, keeping the discussion anchored to the available evidence.
+
+Bring the review into one document
+Finally, open the monthly governance pack. The summary, S L A position, exceptions, quality findings, and source evidence come together in a consistent document for the governance review.
+
+Export a meeting-ready PDF
+Export as PDF opens the browser's print workflow. Save the pack as a PDF to share the monthly position, supported by the figures and evidence reviewed throughout the journey.
+
+Evidence. Understanding. Accountability.
+From five extract slots to a traceable governance story. Prepare the evidence, review service performance, investigate exceptions, and share the result. A I B Life, with clarity at every step.

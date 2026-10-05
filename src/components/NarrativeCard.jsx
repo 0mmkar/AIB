@@ -40,7 +40,7 @@ const labelFor = (paragraph) => TOPICS.find((t) => t.test.test(paragraph))?.labe
 // The word-boundary anchors sit only on the alphabetic units. A trailing \b after "%" can
 // never match — "%" and the following space are both non-word characters — which silently
 // backtracks the unit off the match and leaves "5.9 %" split across the highlight.
-const FIGURE_RE = /(?<![A-Za-z0-9.])\d+(?:,\d{3})*(?:\.\d+)?(?:\s?%|\s?days?\b|\s?items?\b)?(?![A-Za-z0-9])/g;
+const FIGURE_RE = /(?<![A-Za-z0-9.])\d+(?:,\d{3})*(?:\.\d+)?(?:\s?%|\s?days?\b|\s?polic(?:y|ies)\b)?(?![A-Za-z0-9])/g;
 const isYear = (token) => /^(?:19|20)\d{2}$/.test(token.trim());
 // "24 September 2026" — the day is part of a date, not a figure.
 const DAY_OF_MONTH = /^\s(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i;
@@ -74,8 +74,8 @@ function verdictOf(data) {
   }
   return {
     tone: 'clear',
-    headline: `Every service level with completed items met target in ${month}`,
-    detail: `${data.headline.openPastDeadline.toLocaleString('en-IE')} items open past deadline at the extract date.`,
+    headline: `Every service level with completed policies met target in ${month}`,
+    detail: `${data.headline.openPastDeadline.toLocaleString('en-IE')} policies open past deadline at the data source date.`,
   };
 }
 

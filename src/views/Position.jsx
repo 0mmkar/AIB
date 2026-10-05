@@ -4,6 +4,7 @@ import { Status } from '../components/Chips.jsx';
 import ItemTable from '../components/ItemTable.jsx';
 import { IconAlert, IconInfo, IconCircleCheck } from '../components/Icons.jsx';
 import { fmtRate, fmtTarget, fmtGap, fmtCount, progressOf } from '../lib/format.js';
+import { POLICY_COUNT_NOTE } from '../lib/customerCopy.js';
 
 const SEV_ICON = { red: <IconAlert />, amber: <IconAlert />, info: <IconInfo /> };
 const STATUS_COLOUR = { PASS: 'var(--green)', FAIL: 'var(--red)', NO_DATA: 'var(--nodata)' };
@@ -34,11 +35,11 @@ export function SlaTable({ results, slas, selected, onSelect, compact = false })
             <th className="num">Target</th>
             <th className="num">Met</th>
             <th className="num">Missed</th>
-            <th className="num" title="Open at the extract date with the deadline passed">Open overdue</th>
+            <th className="num" title="Open at the data source date with the deadline passed">Open overdue</th>
             <th className="num">Rate (completed)</th>
             {!compact && <th className="num">Gap</th>}
-            {!compact && <th style={{ width: 96 }}>Position</th>}
-            <th className="num" title="Counts overdue open items as not met">Rate incl. open</th>
+            {!compact && <th style={{ width: 96 }}>Progress</th>}
+            <th className="num" title="Counts overdue open policies as not met">Rate incl. open</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -148,7 +149,7 @@ export function DriversPanel({ drivers, slas, limit = 6, emptyText }) {
               <span className="tag">{label(d.sla)}</span>
             </div>
             <div className="cluster-meta">
-              {fmtCount(d.failures)} of {fmtCount(d.measured)} items failed ({fmtCount(d.missed)} missed
+              {fmtCount(d.failures)} of {fmtCount(d.measured)} policies failed ({fmtCount(d.missed)} missed
               {d.openPastDeadline ? `, ${fmtCount(d.openPastDeadline)} open overdue` : ''}) · {d.sharePct}% of {label(d.sla)} failures from{' '}
               {d.volumeSharePct}% of its volume
             </div>
@@ -188,7 +189,7 @@ function SlaItems({ month, slaId, slas, onClose }) {
     <div className="card">
       <div className="card-head">
         <div>
-          <h2>{label(slaId)} · items this period</h2>
+          <h2>{label(slaId)} · policies this period</h2>
           <div className="sub">{def?.statement}</div>
         </div>
         <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
@@ -226,8 +227,8 @@ export default function Position({ analysis, slas }) {
           <div className="card-pad row" style={{ gap: 12 }}>
             <IconAlert />
             <span className="tiny" style={{ color: 'var(--ink-2)', lineHeight: 1.55 }}>
-              <b>{analysis.label} is incomplete.</b> The extract was taken on {analysis.as_of_label}; activity after it is not
-              included and {fmtCount(s.openNotYetDue)} item{s.openNotYetDue === 1 ? ' is' : 's are'} open but not yet due.
+              <b>{analysis.label} is incomplete.</b> The data source snapshot was taken on {analysis.as_of_label}; activity after it is not
+              included and {fmtCount(s.openNotYetDue)} {s.openNotYetDue === 1 ? 'policy is' : 'policies are'} open but not yet due.
             </span>
           </div>
         </div>
@@ -245,18 +246,18 @@ export default function Position({ analysis, slas }) {
           <div className="stat-note">{s.failing.length ? s.failing.map(label).join(', ') : 'none this period'}</div>
         </div>
         <div className="stat accent-violet">
-          <div className="stat-label">Items measured</div>
+          <div className="stat-label">Policies measured</div>
           <div className="stat-value">{fmtCount(s.measured)}</div>
           <div className="stat-note">{fmtCount(s.met)} met · {fmtCount(s.missed)} missed · {fmtCount(s.openPastDeadline)} open overdue</div>
         </div>
         <div className="stat accent-amber">
           <div className="stat-label">Open past deadline</div>
           <div className="stat-value" style={{ color: s.openPastDeadline ? '#c9741a' : undefined }}>{fmtCount(s.openPastDeadline)}</div>
-          <div className="stat-note">{s.openNotYetDue ? `${fmtCount(s.openNotYetDue)} more open, not yet due` : 'at the extract date'}</div>
+          <div className="stat-note">{s.openNotYetDue ? `${fmtCount(s.openNotYetDue)} more open, not yet due` : 'at the data source date'}</div>
         </div>
         {s.noData > 0 && (
           <div className="stat">
-            <div className="stat-label">No completed items</div>
+            <div className="stat-label">No completed policies</div>
             <div className="stat-value" style={{ color: 'var(--nodata)' }}>{s.noData}</div>
             <div className="stat-note">no rate, so no verdict</div>
           </div>
@@ -271,11 +272,12 @@ export default function Position({ analysis, slas }) {
       <div className="card">
         <div className="card-head">
           <div>
-            <h2>Schedule 23 position</h2>
+            <h2>Schedule 23 · SLA Status</h2>
             <div className="sub">
-              Pass or fail on Rate (completed) = met ÷ (met + missed). Rate incl. open also counts overdue open items as
-              not met. Select a line to see its items.
+              Pass or fail on Rate (completed) = met ÷ (met + missed). Rate incl. open also counts overdue open policies as
+              not met. Select a line to see its policies.
             </div>
+            <div className="sub">{POLICY_COUNT_NOTE}</div>
           </div>
         </div>
         <SlaTable results={results} slas={slas} selected={selected} onSelect={setSelected} />

@@ -365,14 +365,22 @@ async function bedrockNarrative(intel) {
 // -------------------------------------------------------------- entrypoint
 
 export async function generateNarrative(intel, { refresh = false } = {}) {
-  const key = fingerprint(brief(intel));
+  const configured = hasBedrockCredentials();
+  // Enabling Bedrock or changing its model/region must not reuse a rules summary
+  // or a response from another configuration. Credential values never enter the cache.
+  const key = fingerprint({
+    brief: brief(intel),
+    provider: configured ? 'bedrock' : 'rules',
+    model: configured ? BEDROCK_MODEL : null,
+    region: configured ? awsRegion() : null,
+  });
 
   if (!refresh) {
     const cached = readCache(key);
     if (cached) return { ...cached, cached: true };
   }
 
-  if (hasBedrockCredentials()) {
+  if (configured) {
     try {
       const text = await bedrockNarrative(intel);
       return writeCache(key, { text, source: 'bedrock', model: BEDROCK_MODEL, generatedAt: new Date().toISOString() });

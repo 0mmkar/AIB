@@ -1,0 +1,327 @@
+1
+00:00:00,475 --> 00:00:03,339
+Welcome to AIB Life's service governance application.
+
+2
+00:00:03,349 --> 00:00:06,702
+Follow the complete journey, from operational data sources to a clear,
+
+3
+00:00:06,712 --> 00:00:08,810
+evidence based view of performance.
+
+4
+00:00:09,517 --> 00:00:13,223
+Upload your data sources, apply the Schedule twenty three rules, investigate
+
+5
+00:00:13,233 --> 00:00:16,014
+the results, and share a monthly governance pack.
+
+6
+00:00:16,024 --> 00:00:18,017
+Here is how the journey connects.
+
+7
+00:00:18,725 --> 00:00:21,251
+The dashboard brings reporting periods together.
+
+8
+00:00:21,261 --> 00:00:24,561
+See which service levels missed target, how many policies were measured,
+
+9
+00:00:24,571 --> 00:00:26,154
+and what remains overdue.
+
+10
+00:00:26,164 --> 00:00:28,729
+A shortcut opens the latest governance pack.
+
+11
+00:00:29,433 --> 00:00:31,174
+Start in Data Sources.
+
+12
+00:00:31,184 --> 00:00:34,428
+Upload correspondence, cancellation, withdrawal, and workflow files as
+
+13
+00:00:34,438 --> 00:00:36,013
+CSV or Excel.
+
+14
+00:00:36,023 --> 00:00:39,140
+The application identifies each source from its contents.
+
+15
+00:00:39,850 --> 00:00:42,662
+The checklist confirms all five required sources.
+
+16
+00:00:42,672 --> 00:00:45,040
+File details show the records received.
+
+17
+00:00:45,050 --> 00:00:47,967
+The snapshot date and quality notes explain the evidence behind the reporting
+
+18
+00:00:47,977 --> 00:00:49,004
+set.
+
+19
+00:00:49,725 --> 00:00:52,465
+New files replace earlier files in the same slot and rebuild every
+
+20
+00:00:52,475 --> 00:00:53,735
+monthly pack.
+
+21
+00:00:53,745 --> 00:00:57,011
+Analysts can also rebuild on demand, remove files, or reload the supplied
+
+22
+00:00:57,021 --> 00:00:58,432
+data sources.
+
+23
+00:00:59,142 --> 00:01:01,348
+Choose a reporting month from the dashboard.
+
+24
+00:01:01,358 --> 00:01:03,806
+Search makes older periods easy to find.
+
+25
+00:01:03,816 --> 00:01:07,898
+Incomplete periods are clearly labelled, keeping partial months in context.
+
+26
+00:01:08,642 --> 00:01:11,889
+Reports provides access to SLA Status, exceptions, and the governance
+
+27
+00:01:11,899 --> 00:01:12,836
+pack.
+
+28
+00:01:12,846 --> 00:01:16,371
+Status compares five headline service levels against target, with met,
+
+29
+00:01:16,381 --> 00:01:18,559
+missed, and overdue counts.
+
+30
+00:01:19,267 --> 00:01:23,311
+Pass or fail uses completed policies: met divided by met plus missed.
+
+31
+00:01:23,321 --> 00:01:25,696
+The second rate includes overdue open work.
+
+32
+00:01:25,706 --> 00:01:29,732
+Counts represent service records, so a policy can appear more than once.
+
+33
+00:01:30,433 --> 00:01:33,373
+Select a service level to see its underlying policies.
+
+34
+00:01:33,383 --> 00:01:36,611
+Product, handler, timing, and outcome connect each result to operational
+
+35
+00:01:36,621 --> 00:01:37,663
+evidence.
+
+36
+00:01:37,673 --> 00:01:41,162
+Unit linked performance also expands into three component steps.
+
+37
+00:01:41,892 --> 00:01:44,252
+Outcome filters narrow the list immediately.
+
+38
+00:01:44,262 --> 00:01:46,999
+Isolate missed policies and compare the required deadline with actual
+
+39
+00:01:47,009 --> 00:01:50,396
+completion, using the evidence that produced the monthly score.
+
+40
+00:01:51,100 --> 00:01:54,558
+Exceptions brings failing service levels and failed policies together.
+
+41
+00:01:54,568 --> 00:01:57,383
+Switch between missed deadlines and open overdue work.
+
+42
+00:01:57,393 --> 00:02:01,228
+A service level can pass overall and still contain individual exceptions.
+
+43
+00:02:01,933 --> 00:02:05,647
+Data quality findings flag overdue policies, unmatched approvals, exclusions,
+
+44
+00:02:05,657 --> 00:02:07,326
+and incomplete periods.
+
+45
+00:02:07,336 --> 00:02:11,009
+Reviewers can see where the evidence needs attention before drawing conclusions.
+
+46
+00:02:11,725 --> 00:02:14,353
+Open Intelligence to explore the reporting history.
+
+47
+00:02:14,363 --> 00:02:17,726
+The latest complete month's status sits alongside recurring misses, performance
+
+48
+00:02:17,736 --> 00:02:21,071
+trends, and outstanding work across the reporting window.
+
+49
+00:02:21,808 --> 00:02:25,950
+Amazon Nova Pro turns the computed report figures into an executive explanation.
+
+50
+00:02:25,960 --> 00:02:29,226
+The summary covers recent performance, the wider reporting window, failure
+
+51
+00:02:29,236 --> 00:02:31,789
+concentrations, and overdue backlog.
+
+52
+00:02:32,517 --> 00:02:35,862
+Monthly trends compare each service level with its target over time.
+
+53
+00:02:35,872 --> 00:02:38,383
+Change the selection to explore another pattern.
+
+54
+00:02:38,393 --> 00:02:41,795
+The service level record summarises complete months below target.
+
+55
+00:02:42,517 --> 00:02:45,201
+The scope selector narrows the analysis to a chosen month and everything
+
+56
+00:02:45,211 --> 00:02:46,245
+before it.
+
+57
+00:02:46,255 --> 00:02:49,055
+The executive summary refreshes for that window, keeping the governance
+
+58
+00:02:49,065 --> 00:02:50,660
+discussion focused.
+
+59
+00:02:51,392 --> 00:02:54,823
+Failure concentrations highlight handlers, products, and transaction types
+
+60
+00:02:54,833 --> 00:02:56,912
+with unusually high failure rates.
+
+61
+00:02:56,922 --> 00:02:59,069
+These patterns direct investigation.
+
+62
+00:02:59,079 --> 00:03:02,293
+They show where failures occur, without proving their cause.
+
+63
+00:03:03,017 --> 00:03:05,937
+The backlog groups open overdue policies by service level and shows the
+
+64
+00:03:05,947 --> 00:03:07,331
+oldest deadline.
+
+65
+00:03:07,341 --> 00:03:10,303
+This keeps unfinished obligations visible alongside the formal completed
+
+66
+00:03:10,313 --> 00:03:12,134
+policy performance rate.
+
+67
+00:03:12,850 --> 00:03:14,809
+Ask a question about the report.
+
+68
+00:03:14,819 --> 00:03:18,423
+Here, Nova explains where non unit linked failures concentrate.
+
+69
+00:03:18,433 --> 00:03:21,357
+The model's answer uses the report's computed evidence, with its source
+
+70
+00:03:21,367 --> 00:03:23,417
+identified beneath the response.
+
+71
+00:03:24,142 --> 00:03:26,931
+Open Governance pack directly from the month's results.
+
+72
+00:03:26,941 --> 00:03:30,207
+The dashboard also offers a shortcut to the latest complete month.
+
+73
+00:03:30,217 --> 00:03:34,122
+Summary, SLA Status, exceptions, quality findings, and source evidence
+
+74
+00:03:34,132 --> 00:03:35,697
+form one document.
+
+75
+00:03:36,433 --> 00:03:39,756
+Select Export as PDF, then choose Save as PDF in the browser's
+
+76
+00:03:39,766 --> 00:03:40,951
+print window.
+
+77
+00:03:40,961 --> 00:03:43,938
+Share the monthly findings with colleagues and clients, supported by the
+
+78
+00:03:43,948 --> 00:03:46,031
+evidence reviewed throughout this journey.
+
+79
+00:03:46,767 --> 00:03:49,650
+From five data sources to a traceable governance story.
+
+80
+00:03:49,660 --> 00:03:52,588
+Prepare the evidence, review performance, investigate exceptions, and
+
+81
+00:03:52,598 --> 00:03:54,057
+share the findings.
+
+82
+00:03:54,067 --> 00:03:56,849
+AIB Life, with clarity at every step.

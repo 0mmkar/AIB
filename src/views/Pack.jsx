@@ -3,6 +3,7 @@ import { Status } from '../components/Chips.jsx';
 import { SlaTable, QualityPanel, DriversPanel } from './Position.jsx';
 import { IconDownload } from '../components/Icons.jsx';
 import { fmtRate, fmtTarget, fmtGap, fmtCount, fmtStamp, fmtBytes } from '../lib/format.js';
+import { POLICY_COUNT_NOTE } from '../lib/customerCopy.js';
 
 /**
  * The governance pack. Rendered as a document rather than a dashboard and styled for print,
@@ -18,7 +19,8 @@ export default function Pack({ analysis, slas }) {
 
   return (
     <div className="card pack-page" style={{ padding: '34px 38px' }}>
-      <div className="row no-print" style={{ justifyContent: 'flex-end', marginBottom: 18 }}>
+      <div className="row wrap no-print" style={{ justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
+        <span className="tiny muted">Choose “Save as PDF” in the print window to download and share this report.</span>
         <button className="btn btn-primary btn-sm" onClick={() => window.print()}>
           <IconDownload /> Export as PDF
         </button>
@@ -35,12 +37,12 @@ export default function Pack({ analysis, slas }) {
             <h1 style={{ fontSize: 25, marginTop: 7 }}>Monthly SLA Governance Pack</h1>
             <div className="muted" style={{ fontSize: 13, marginTop: 5 }}>
               Reporting period: <b style={{ color: 'var(--ink)' }}>{analysis.label}</b>
-              {analysis.partial && <> · <b style={{ color: '#c9741a' }}>incomplete at the extract date</b></>}
+              {analysis.partial && <> · <b style={{ color: '#c9741a' }}>incomplete at the data source date</b></>}
             </div>
           </div>
           <div style={{ textAlign: 'right', fontSize: 11.5, color: 'var(--ink-3)', lineHeight: 1.7 }}>
-            <div>BaNCS extract as of <b style={{ color: 'var(--ink)' }}>{analysis.as_of_label}</b></div>
-            <div>{sources.length} extract files · {fmtCount(s.measured)} items measured</div>
+            <div>Data source as of <b style={{ color: 'var(--ink)' }}>{analysis.as_of_label}</b></div>
+            <div>{sources.length} data source files · {fmtCount(s.measured)} policies measured</div>
             <div>Generated {fmtStamp(analysis.generated_at)} · supersedes prior builds</div>
           </div>
         </div>
@@ -63,29 +65,30 @@ export default function Pack({ analysis, slas }) {
           ) : (
             <>; none missed.</>
           )}{' '}
-          {s.noData > 0 && <>{s.noData} had no completed items, so no rate and no verdict. </>}
-          Of {fmtCount(s.measured)} items measured, {fmtCount(s.missed)} missed their deadline and{' '}
-          {fmtCount(s.openPastDeadline)} were still open past it on {analysis.as_of_label}; those open items sit outside the
+          {s.noData > 0 && <>{s.noData} had no completed policies, so no rate and no verdict. </>}
+          Of {fmtCount(s.measured)} policies measured, {fmtCount(s.missed)} missed their deadline and{' '}
+          {fmtCount(s.openPastDeadline)} were still open past it on {analysis.as_of_label}; those open policies sit outside the
           pass/fail rate but are listed as exceptions.{' '}
-          {analysis.partial && <>The period was still running when the extract was taken, so its figures will move. </>}
+          {analysis.partial && <>The period was still running when the data source snapshot was taken, so its figures will move. </>}
           {serious > 0 && <>{serious} data-quality finding{serious === 1 ? '' : 's'} affect the evidence and are set out in section 4.</>}
         </p>
 
         <div className="stat-row" style={{ marginTop: 16 }}>
           <Tile label="Met target" value={s.pass} colour="var(--green)" />
           <Tile label="Missed target" value={s.fail} colour="var(--red)" />
-          <Tile label="Items measured" value={fmtCount(s.measured)} colour="var(--ink)" />
-          <Tile label="Missed items" value={fmtCount(s.missed)} colour="var(--red)" />
+          <Tile label="Policies measured" value={fmtCount(s.measured)} colour="var(--ink)" />
+          <Tile label="Missed policies" value={fmtCount(s.missed)} colour="var(--red)" />
           <Tile label="Open overdue" value={fmtCount(s.openPastDeadline)} colour="#c9741a" />
         </div>
       </Section>
 
       {/* --------------------------------------------------- full sla position */}
-      <Section title="2. Service level position">
+      <Section title="2. SLA Status">
         <SlaTable results={results} slas={slas} compact />
         <p className="tiny muted" style={{ marginTop: 10, lineHeight: 1.6 }}>
-          Rate (completed) = met ÷ (met + missed), and decides pass or fail. Rate incl. open also counts items open past
-          their deadline at the extract date as not met. 23B UL is the combined result of Steps 1–3.
+          Rate (completed) = met ÷ (met + missed), and decides pass or fail. Rate incl. open also counts policies open past
+          their deadline at the data source date as not met. 23B UL is the combined result of Steps 1–3.
+          {' '}{POLICY_COUNT_NOTE}
         </p>
       </Section>
 
@@ -127,7 +130,7 @@ export default function Pack({ analysis, slas }) {
       </Section>
 
       {/* ------------------------------------------------- evidence appendix */}
-      <Section title="5. Evidence — extract files used">
+      <Section title="5. Evidence — data source files used">
         <table className="table">
           <thead>
             <tr><th>File as received</th><th>Identified as</th><th className="num">Records</th><th>Feeds</th><th>Loaded</th></tr>
@@ -139,7 +142,7 @@ export default function Pack({ analysis, slas }) {
                   <div className="file-name" style={{ maxWidth: 300 }}>{f.filename}</div>
                   <div className="metric-sub">{fmtBytes(f.bytes)} · header on row {f.headerRow}</div>
                 </td>
-                <td className="tiny">{f.label}{f.kind === 'workflow' ? ` (${f.covers.map((c) => c.replace('workflow-', '')).join(' + ')} items)` : ''}</td>
+                <td className="tiny">{f.label}{f.kind === 'workflow' ? ` (${f.covers.map((c) => c.replace('workflow-', '')).join(' + ')} policies)` : ''}</td>
                 <td className="num">{fmtCount(f.records)}</td>
                 <td className="tiny muted">{[...new Set(slas.filter((d) => d.sources?.includes(f.kind) && !d.parts).map((d) => d.label))].join(', ')}</td>
                 <td className="tiny muted">{fmtStamp(f.uploadedAt)}</td>
@@ -155,7 +158,7 @@ export default function Pack({ analysis, slas }) {
       </Section>
 
       <div style={{ borderTop: '1px solid var(--line)', marginTop: 26, paddingTop: 14, fontSize: 10.5, color: 'var(--ink-4)', lineHeight: 1.6 }}>
-        AIB Life · SLA Governance Pack · {analysis.label} · BaNCS extract as of {analysis.as_of_label} · generated {fmtStamp(analysis.generated_at)}.
+        AIB Life · SLA Governance Pack · {analysis.label} · Data source as of {analysis.as_of_label} · generated {fmtStamp(analysis.generated_at)}.
         This pack replaces any previously generated version for this reporting period.
       </div>
     </div>

@@ -1,0 +1,14 @@
+{
+  "resolution": "1920x1080",
+  "fps": 24,
+  "durationSeconds": 237.167,
+  "sizeMB": 45.92,
+  "videoCodec": "H.264",
+  "audioCodec": "AAC stereo",
+  "decodeErrors": 0,
+  "captionCues": 83,
+  "overlappingCues": 0,
+  "reviewFrames": 23,
+  "loudnessLUFS": "-15.98",
+  "truePeakDbTP": "-3.72"
+}

@@ -8,7 +8,7 @@ import { IconSpark, IconAlert, IconLayers, IconClock, IconCircleCheck } from '..
 import { fmtRate, fmtTarget, fmtCount, fmtDay } from '../lib/format.js';
 
 const BRIEF =
-  'How each Schedule 23 service level has performed month by month, where its failures sit, and what was still overdue when the extract was taken.';
+  'How each Schedule 23 service level has performed month by month, where its failures sit, and what was still overdue when the data source snapshot was taken.';
 
 const recordStyle = (t) =>
   t.failMonths === 0
@@ -115,7 +115,7 @@ export default function Intelligence({ open, onClose, version }) {
             <div className="card empty">
               <div className="empty-icon"><IconLayers size={26} /></div>
               <h3>No history to analyse yet</h3>
-              <p>Load the BaNCS extract set and the trend, driver and backlog panels will populate.</p>
+              <p>Load the data sources and the trend, driver and backlog panels will populate.</p>
             </div>
           )}
 
@@ -131,7 +131,7 @@ export default function Intelligence({ open, onClose, version }) {
                   accent="red"
                 />
                 <Stat label="Months below target" value={data.headline.failMonths} note={`of ${data.headline.scoredMonths} service-level months scored`} accent="amber" />
-                <Stat label="Open past deadline" value={fmtCount(data.headline.openPastDeadline)} note={`at the extract date, ${data.asOfLabel}`} accent="amber" />
+                <Stat label="Open past deadline" value={fmtCount(data.headline.openPastDeadline)} note={`at the data source date, ${data.asOfLabel}`} accent="amber" />
               </div>
 
               {/* ------------------------------------------------ narrative */}
@@ -177,7 +177,7 @@ export default function Intelligence({ open, onClose, version }) {
                           <div className="risk-why">
                             Missed in {t.failMonths} of {t.observations} complete months
                             {t.failStreak > 1 ? ` · the last ${t.failStreak} in a row` : ''}
-                            {t.worst ? ` · weakest ${t.worst.label} at ${fmtRate(t.worst.rateCompleted)} (${fmtCount(t.worst.met + t.worst.missed)} completed item${t.worst.met + t.worst.missed === 1 ? '' : 's'})` : ''}
+                            {t.worst ? ` · weakest ${t.worst.label} at ${fmtRate(t.worst.rateCompleted)} (${fmtCount(t.worst.met + t.worst.missed)} completed ${t.worst.met + t.worst.missed === 1 ? 'policy' : 'policies'})` : ''}
                           </div>
                           <div className="months-strip" title="Complete months: red = below target">
                             {t.points.filter((p) => !p.partial && p.status !== 'NO_DATA').map((p) => (
@@ -215,7 +215,7 @@ export default function Intelligence({ open, onClose, version }) {
                 <div className="card-head">
                   <div>
                     <h2>Overdue backlog · {data.asOfLabel}</h2>
-                    <div className="sub">Items still open past their deadline when the extract was taken — outside the pass/fail rate, each a miss in waiting</div>
+                    <div className="sub">Policies still open past their deadline when the data source snapshot was taken — outside the pass/fail rate, each a miss in waiting</div>
                   </div>
                 </div>
                 <div className="card-pad">
@@ -242,7 +242,7 @@ export default function Intelligence({ open, onClose, version }) {
               <div className="row" style={{ justifyContent: 'center', paddingTop: 4 }}>
                 <span className="tiny muted row" style={{ gap: 7 }}>
                   <IconClock />
-                  Computed from {data.headline.monthsAnalysed} monthly packs · {fmtCount(data.headline.measured)} items measured · every figure derived by rule, nothing projected
+                  Computed from {data.headline.monthsAnalysed} monthly packs · {fmtCount(data.headline.measured)} policies measured · every figure derived by rule, nothing projected
                 </span>
               </div>
             </>

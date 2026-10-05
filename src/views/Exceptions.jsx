@@ -70,10 +70,10 @@ export default function Exceptions({ analysis, slas }) {
             <h2 style={{ fontSize: 16 }}>
               {failing.length
                 ? `${failing.length} of ${headline.length} service levels missed target in ${analysis.label}`
-                : `Every service level with completed items met target in ${analysis.label}`}
+                : `Every service level with completed policies met target in ${analysis.label}`}
             </h2>
             <p className="tiny muted" style={{ marginTop: 5, lineHeight: 1.55 }}>
-              {fmtCount(missed)} item{missed === 1 ? '' : 's'} missed {missed === 1 ? 'its' : 'their'} deadline and {fmtCount(overdue)}{' '}
+              {fmtCount(missed)} {missed === 1 ? 'policy' : 'policies'} missed {missed === 1 ? 'its' : 'their'} deadline and {fmtCount(overdue)}{' '}
               {overdue === 1 ? 'is' : 'are'} still open past it. Every one is listed below with the record it came from.
             </p>
           </div>
@@ -105,8 +105,8 @@ export default function Exceptions({ analysis, slas }) {
       <div className="card">
         <div className="card-head">
           <div>
-            <h2>Failed items</h2>
-            <div className="sub">Every item that missed its deadline or is still open past it</div>
+            <h2>Policies with exceptions</h2>
+            <div className="sub">Every policy that missed its deadline or is still open past it</div>
           </div>
           <span className="tag">{fmtCount(exceptions.length)}</span>
         </div>

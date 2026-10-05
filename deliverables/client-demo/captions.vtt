@@ -1,0 +1,250 @@
+WEBVTT
+
+00:00:00.503 --> 00:00:03.287
+Welcome to AIB Life's service governance application.
+
+00:00:03.417 --> 00:00:06.323
+This walkthrough follows the complete journey, from operational extracts
+
+00:00:06.333 --> 00:00:08.513
+to a clear, evidence based view of performance.
+
+00:00:09.545 --> 00:00:10.939
+The flow is straightforward.
+
+00:00:11.069 --> 00:00:14.789
+Bring in the BaNCS extracts, apply the Schedule twenty three rules, investigate
+
+00:00:14.799 --> 00:00:16.960
+the results, and share a monthly governance pack.
+
+00:00:17.068 --> 00:00:18.315
+Let's follow that journey.
+
+00:00:19.336 --> 00:00:21.974
+The dashboard brings reporting periods into one place.
+
+00:00:22.104 --> 00:00:25.028
+At a glance, see which service levels missed target, how much work
+
+00:00:25.038 --> 00:00:26.780
+was measured, and what remains overdue.
+
+00:00:27.777 --> 00:00:30.130
+An operations analyst starts in Extracts.
+
+00:00:30.251 --> 00:00:33.724
+Upload the correspondence, cancellation, withdrawal, and workflow files
+
+00:00:33.734 --> 00:00:35.110
+as CSV or Excel.
+
+00:00:35.224 --> 00:00:38.191
+The application identifies each extract from its contents.
+
+00:00:39.211 --> 00:00:41.748
+The checklist confirms coverage of all five slots.
+
+00:00:41.869 --> 00:00:45.068
+File details show the records received, while the extract date and quality
+
+00:00:45.078 --> 00:00:47.422
+notes explain the evidence behind the reporting set.
+
+00:00:48.443 --> 00:00:50.989
+New files replace earlier files in the same slot.
+
+00:00:51.101 --> 00:00:52.733
+Every monthly pack is rebuilt.
+
+00:00:52.865 --> 00:00:56.374
+Analysts can also rebuild on demand, remove files, or reload the delivered
+
+00:00:56.384 --> 00:00:57.230
+extract set.
+
+00:00:58.244 --> 00:01:00.680
+Next, choose a reporting month from the dashboard.
+
+00:01:00.792 --> 00:01:03.091
+Older periods are easy to find using search.
+
+00:01:03.205 --> 00:01:06.875
+Incomplete periods are clearly labelled, so a partial month stays in context.
+
+00:01:07.911 --> 00:01:10.826
+The SLA position compares five headline service levels with their
+
+00:01:10.836 --> 00:01:11.563
+targets.
+
+00:01:11.674 --> 00:01:14.668
+Met, missed, and overdue counts sit beside the verdict.
+
+00:01:14.801 --> 00:01:17.740
+Unit linked performance expands into three component steps.
+
+00:01:18.735 --> 00:01:22.423
+Pass or fail uses completed items: met divided by met plus missed.
+
+00:01:22.553 --> 00:01:26.017
+The second rate also includes overdue open work, making unfinished service
+
+00:01:26.027 --> 00:01:28.546
+obligations visible alongside completed performance.
+
+00:01:29.577 --> 00:01:32.151
+Select a service level to open the underlying items.
+
+00:01:32.262 --> 00:01:36.170
+Each record shows its policy, product, handler, timing, and outcome.
+
+00:01:36.303 --> 00:01:39.169
+The reviewer can trace the result back to operational evidence.
+
+00:01:40.193 --> 00:01:42.373
+Outcome filters narrow the list immediately.
+
+00:01:42.503 --> 00:01:45.711
+Here, the reviewer isolates missed items and compares the required deadline
+
+00:01:45.721 --> 00:01:48.316
+with the actual completion, using the same evidence that produced the
+
+00:01:48.326 --> 00:01:49.117
+monthly score.
+
+00:01:50.128 --> 00:01:53.515
+The Exceptions view brings failing service levels and failed items together.
+
+00:01:53.627 --> 00:01:57.434
+Switch between missed deadlines and open overdue work to focus the investigation.
+
+00:01:57.548 --> 00:02:00.624
+Even a passing service level can contain individual exceptions.
+
+00:02:01.610 --> 00:02:04.046
+Data quality findings stay beside the results.
+
+00:02:04.176 --> 00:02:07.658
+They flag overdue items, unmatched approvals, exclusions, and incomplete
+
+00:02:07.668 --> 00:02:10.519
+periods, helping reviewers understand where the evidence needs attention
+
+00:02:10.529 --> 00:02:11.786
+before drawing conclusions.
+
+00:02:12.795 --> 00:02:15.615
+The governance lead opens Intelligence for the historical view.
+
+00:02:15.719 --> 00:02:18.534
+This panel connects the latest complete month's position with patterns
+
+00:02:18.544 --> 00:02:21.505
+across the reporting window, including recurring misses and outstanding
+
+00:02:21.515 --> 00:02:22.022
+work.
+
+00:02:23.027 --> 00:02:26.313
+Executive insight turns the computed figures into a readable summary.
+
+00:02:26.443 --> 00:02:30.108
+It describes the latest position, the wider record, failure concentrations,
+
+00:02:30.118 --> 00:02:31.192
+and overdue backlog.
+
+00:02:31.306 --> 00:02:34.519
+The application also supports optional Bedrock generated wording.
+
+00:02:35.536 --> 00:02:38.533
+Monthly trends show how each service level compares with its target over
+
+00:02:38.543 --> 00:02:39.041
+time.
+
+00:02:39.146 --> 00:02:42.070
+Change the selected service level to explore another pattern, while the
+
+00:02:42.080 --> 00:02:45.019
+service level record summarises complete months below target.
+
+00:02:46.045 --> 00:02:49.024
+The scope selector narrows the analysis to a chosen month and everything
+
+00:02:49.034 --> 00:02:49.715
+before it.
+
+00:02:49.845 --> 00:02:52.769
+This filters the current reporting history, making the relevant window
+
+00:02:52.779 --> 00:02:54.603
+easier to discuss in a governance meeting.
+
+00:02:55.619 --> 00:02:59.101
+Failure concentrations highlight handlers, products, and transaction types
+
+00:02:59.111 --> 00:03:00.724
+with unusually high failure rates.
+
+00:03:00.854 --> 00:03:03.888
+These patterns help direct investigation; they describe where the failures
+
+00:03:03.898 --> 00:03:05.686
+sit, rather than proving their cause.
+
+00:03:06.711 --> 00:03:09.791
+The backlog view groups open overdue items by service level and shows
+
+00:03:09.801 --> 00:03:10.793
+the oldest deadline.
+
+00:03:10.923 --> 00:03:14.222
+This adds a practical view of unfinished work alongside the formal completed
+
+00:03:14.232 --> 00:03:15.398
+item performance rate.
+
+00:03:16.402 --> 00:03:18.902
+For a direct explanation, ask about the report.
+
+00:03:19.032 --> 00:03:21.824
+Here, we ask where non unit linked failures concentrate.
+
+00:03:21.957 --> 00:03:25.165
+The answer uses already computed report figures, keeping the discussion
+
+00:03:25.175 --> 00:03:26.742
+anchored to the available evidence.
+
+00:03:27.744 --> 00:03:29.924
+Finally, open the monthly governance pack.
+
+00:03:30.054 --> 00:03:33.692
+The summary, SLA position, exceptions, quality findings, and source
+
+00:03:33.702 --> 00:03:36.604
+evidence come together in a consistent document for the governance review.
+
+00:03:37.603 --> 00:03:40.450
+Export as PDF opens the browser's print workflow.
+
+00:03:40.578 --> 00:03:43.612
+Save the pack as a PDF to share the monthly position, supported
+
+00:03:43.622 --> 00:03:45.739
+by the figures and evidence reviewed throughout the journey.
+
+00:03:46.744 --> 00:03:49.409
+From five extract slots to a traceable governance story.
+
+00:03:49.513 --> 00:03:53.032
+Prepare the evidence, review service performance, investigate exceptions,
+
+00:03:53.042 --> 00:03:54.070
+and share the result.
+
+00:03:54.183 --> 00:03:56.664
+AIB Life, with clarity at every step.

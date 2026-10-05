@@ -17,7 +17,7 @@ export function SourceChip({ sourceId, label, plain = false }) {
 const STATUS = {
   PASS: { cls: 'rag-GREEN', label: 'Met target' },
   FAIL: { cls: 'rag-RED', label: 'Missed target' },
-  NO_DATA: { cls: 'rag-NO_DATA', label: 'No completed items' },
+  NO_DATA: { cls: 'rag-NO_DATA', label: 'No completed policies' },
 };
 
 export function Status({ status, compact = false }) {

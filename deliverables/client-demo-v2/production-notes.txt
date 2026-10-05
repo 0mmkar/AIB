@@ -1,0 +1,16 @@
+AIB LIFE APPLICATION DEMO
+
+Format: 1920 x 1080, 24 fps, H.264 video with AAC stereo audio.
+Duration: 237.08 seconds.
+
+The screen imagery was captured from the actual application. Zooms, cursor cues and transitions are editorial effects applied to captured interaction states.
+The five input files were verified byte-for-byte against the current application dataset. Results, item records, quality findings and failure groups matched across all 22 months, with zero differences.
+Upload and rebuild actions used an isolated copy to preserve the original stored reports. Capture timestamps therefore reflect the recording session.
+Narration: generated locally with Microsoft Zira Desktop through Windows System.Speech. No narration text was sent to an external voice service. No cloned voice.
+Music: original instrumental score synthesised by scripts/demo/render.py; no third-party music recordings or samples.
+The narrative and Q&A shown returned Amazon Nova Pro responses through the configured Bedrock connection, verified from the application source labels. Existing report-only guards and fallback remain part of the application.
+Pointer artwork: native Windows aero_arrow.cur and aero_link.cur, with their original alpha channel and hotspots; movement and small click rings are editorial overlays.
+PDF output is illustrated with the real print-rendered document; the operating-system print dialog is not recorded.
+
+Files: MP4 master; caption sidecars (SRT and WebVTT); voice script; preview poster; storyboard contact sheet; local HTML player.
+Recreate with capture.mjs and verify-data.mjs; generate speech with voice-local.ps1; package with voice.py --reuse-wav; render with render.py; verify with verify-video.py --normalise and check-player.mjs. All scripts are in scripts/demo. Python packages: Pillow, numpy, imageio-ffmpeg. Windows System.Speech supplies offline narration.

@@ -6,10 +6,10 @@ import { IconCloud, IconCheck, IconCircleDash, IconX, IconInfo } from '../compon
 import { styleFor, styleForExtract } from '../lib/sources.js';
 import { fmtBytes, fmtCount, fmtStamp } from '../lib/format.js';
 
-const PHASES = ['Reading columns', 'Identifying the extract', 'Scoring every service level', 'Building the monthly packs'];
+const PHASES = ['Reading columns', 'Identifying the data source', 'Scoring every service level', 'Building the monthly packs'];
 
 /**
- * The extract set. The BaNCS extracts are one snapshot covering many months, so they are
+ * The data sources. The source files are one snapshot covering many months, so they are
  * loaded here once and every month's pack is rebuilt from them — there is no per-month upload.
  */
 export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
@@ -48,12 +48,12 @@ export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
 
   async function send(files) {
     const list = [...files].filter((f) => /\.(xlsx|csv)$/i.test(f.name));
-    if (!list.length) return toast('Only .csv and .xlsx extracts can be loaded', true);
+    if (!list.length) return toast('Only .csv and .xlsx data sources can be loaded', true);
     setPending(list.map((f, i) => ({ tempId: `${Date.now()}-${i}`, name: f.name, size: f.size, phase: 0 })));
     const res = await run(() => api.upload(list));
     if (!res) return;
     if (res.skipped?.length) toast(`${res.skipped[0].filename}: ${res.skipped[0].error}`, true);
-    else if (res.added.length) toast(`${res.added.length} extract${res.added.length === 1 ? '' : 's'} loaded — packs rebuilt`);
+    else if (res.added.length) toast(`${res.added.length} data source${res.added.length === 1 ? '' : 's'} loaded — packs rebuilt`);
   }
 
   if (!data) return <div className="empty" style={{ paddingTop: 60 }}><span className="spinner" /></div>;
@@ -73,10 +73,10 @@ export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
           onClick={() => fileInput.current?.click()}
         >
           <div className="dropzone-icon"><IconCloud /></div>
-          <div className="dropzone-title">Drop BaNCS extracts here</div>
+          <div className="dropzone-title">Drop data sources here</div>
           <div className="dropzone-hint">
             .csv or .xlsx, in any order. Each file is identified from its columns; a newer file for the same
-            extract replaces the older one, and every monthly pack is rebuilt.
+            data source replaces the older one, and every monthly pack is rebuilt.
           </div>
           <span className="btn btn-primary btn-sm" style={{ marginTop: 4 }}>Browse files</span>
           <input
@@ -90,7 +90,7 @@ export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
         </div>
 
         <div className="expected">
-          <div className="expected-head">Extracts received · {present} of {slots.length}</div>
+          <div className="expected-head">Data sources received · {present} of {slots.length}</div>
           {slots.map((s) => {
             const st = styleFor(s.id);
             return (
@@ -106,8 +106,8 @@ export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
         </div>
 
         <div className="row wrap" style={{ marginTop: 18, gap: 8 }}>
-          <button className="btn btn-soft btn-sm" onClick={() => run(() => api.loadBundled(), 'Delivered extracts reloaded')} disabled={busy}>
-            Reload delivered extracts
+          <button className="btn btn-soft btn-sm" onClick={() => run(() => api.loadBundled(), 'Delivered data sources reloaded')} disabled={busy}>
+            Reload delivered data sources
           </button>
           <button className="btn btn-ghost btn-sm" onClick={() => run(() => api.rebuild(), 'All packs rebuilt')} disabled={busy || !extracts.length}>
             Rebuild packs
@@ -119,11 +119,11 @@ export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
       <div className="card">
         <div className="card-head">
           <div>
-            <h2>Extract set</h2>
+            <h2>Loaded data sources</h2>
             <div className="sub">
               {snapshot
-                ? `As of ${snapshot.as_of_label} · ${snapshot.months.length} reporting periods (${snapshot.months[0]} to ${snapshot.months[snapshot.months.length - 1]}) · ${fmtCount(snapshot.measured)} items measured`
-                : 'No extracts loaded yet'}
+                ? `As of ${snapshot.as_of_label} · ${snapshot.months.length} reporting periods (${snapshot.months[0]} to ${snapshot.months[snapshot.months.length - 1]}) · ${fmtCount(snapshot.measured)} policies measured`
+                : 'No data sources loaded yet'}
             </div>
           </div>
           {snapshot && (
@@ -149,9 +149,9 @@ export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
           {!pending.length && !extracts.length && (
             <div className="empty">
               <div className="empty-icon"><IconCloud size={30} /></div>
-              <h3>No extracts loaded</h3>
+              <h3>No data sources loaded</h3>
               <p>
-                Drop the BaNCS extracts on the left, or reload the delivered set. EBQ feeds 23B NUL and UL Step 1,
+                Drop the data sources on the left, or reload the delivered set. EBQ feeds 23B NUL and UL Step 1,
                 CANREVEXT feeds 23C, WITHDRAWALEXT feeds UL Step 2, and the two WRKFLWEXT files feed 23A, UL Steps 2–3,
                 23C and 23E.
               </p>
@@ -176,7 +176,7 @@ export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
                   </div>
                 </div>
                 <div className="file-actions">
-                  <button className="icon-btn" onClick={() => run(() => api.removeExtract(e.id), `${e.filename} removed — packs rebuilt`)} disabled={busy} title="Remove from the set">
+                  <button className="icon-btn" onClick={() => run(() => api.removeExtract(e.id), `${e.filename} removed — packs rebuilt`)} disabled={busy} title="Remove data source">
                     <IconX />
                   </button>
                 </div>
@@ -190,11 +190,11 @@ export default function Extracts({ boot, onChanged, toast, onOpenDashboard }) {
             <div className="row" style={{ gap: 8, marginBottom: 12 }}>
               <IconInfo />
               <span className="tiny muted">
-                Extract date <b style={{ color: 'var(--ink)' }}>{snapshot.as_of_label}</b>, read from the content: {snapshot.as_of_source}.
-                Open items are judged overdue against it.
+                Data source date <b style={{ color: 'var(--ink)' }}>{snapshot.as_of_label}</b>, read from the content: {snapshot.as_of_source}.
+                Open policies are judged overdue against it.
               </span>
             </div>
-            <QualityPanel flags={snapshot.quality} slas={boot.slas} emptyText="No issues found in the extract set itself." />
+            <QualityPanel flags={snapshot.quality} slas={boot.slas} emptyText="No issues found in the data sources." />
           </div>
         )}
       </div>
